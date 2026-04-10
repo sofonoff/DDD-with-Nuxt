@@ -94,41 +94,54 @@ app/                                # Root application (thin)
 
 ## Context Map
 
-How bounded contexts relate to each other. Arrows show dependency direction — who knows about whom.
+How bounded contexts relate to each other:
 
+```mermaid
+graph TB
+  subgraph shared [shared]
+    direction LR
+    S1[money.ts]
+    S2[useEvents]
+    S3[UiButton / UiPriceTag]
+  end
+
+  subgraph catalog [catalog]
+    C1[Product]
+    C2[useProducts]
+  end
+
+  subgraph cart [cart]
+    CA1[CartItem]
+    CA2[useCart]
+  end
+
+  subgraph orders [orders]
+    O1[Order]
+    O2[useOrders]
+    O3[usePlaceOrder]
+  end
+
+  catalog -.->|import type| shared
+  cart -.->|import type| shared
+  orders -.->|import type| shared
+
+  cart -.->|"import Product type (index.ts)"| catalog
+  orders -.->|"import CartItem type (index.ts)"| cart
+
+  catalog -->|"useCart().addItem() — direct call"| cart
+  orders ==>|"event: OrderPlaced → cart.clear()"| cart
+
+  style shared fill:#f0f9ff,stroke:#2563eb
+  style catalog fill:#f0fdf4,stroke:#16a34a
+  style cart fill:#fefce8,stroke:#ca8a04
+  style orders fill:#fdf2f8,stroke:#db2777
 ```
-┌─────────────────────────────────────────────────────┐
-│                       shared                        │
-│            money.ts · useEvents · UiButton           │
-└──────────▲──────────▲──────────▲────────────────────┘
-           │          │          │
-           │ imports   │ imports   │ imports
-           │          │          │
-┌──────────┴───┐ ┌────┴─────┐ ┌──┴──────────┐
-│   catalog    │ │   cart   │ │   orders    │
-│              │ │          │ │             │
-│ Product      │ │ CartItem │ │ Order       │
-│ useProducts  │ │ useCart   │ │ useOrders   │
-│              │ │          │ │ usePlaceOrder│
-└──────────────┘ └──────────┘ └─────────────┘
-       │              ▲  ▲           │
-       │              │  │           │
-       └──────────────┘  └───────────┘
-        useCart().addItem()  events: OrderPlaced
-        (direct call)       (saga → cart.clear)
-```
 
-**Dependencies:**
-- `cart` -> `catalog`: imports `Product` type via index.ts
-- `cart` -> `orders`: listens to `OrderPlaced` event (Saga)
-- `orders` -> `cart`: imports `CartItem` type via index.ts
-- `catalog` -> `cart`: calls `useCart().addItem()` in UI components (direct)
-- Everyone -> `shared`: value objects, event bus, UI kit
-
-**Rules:**
-- Arrows point **toward the dependency** (who you import from)
-- Direct calls — for UI-initiated actions
-- Events — for side effects across contexts
+**Dependency types:**
+- **Dashed lines** — type imports via `index.ts`
+- **Solid arrow** — direct composable call (UI-initiated)
+- **Bold arrow** — event-driven communication (Saga)
+- All contexts depend on `shared` (value objects, event bus, UI kit)
 - `shared` has no dependencies on other contexts
 
 ---
@@ -217,7 +230,29 @@ events.emit(OrderEvents.OrderPlaced, order)
 events.on(OrderEvents.OrderPlaced, () => clear())
 ```
 
-**Flow:** User clicks "Place Order" -> `usePlaceOrder` creates the order -> emits `OrderPlaced` -> `useCart` hears the event -> clears the cart. Domains don't know about each other.
+**Flow visualized:**
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Cart as cart.vue
+    participant PlaceOrder as usePlaceOrder
+    participant OrderRepo as $orderRepo
+    participant EventBus as useEvents
+    participant CartComposable as useCart
+
+    User->>Cart: clicks "Place Order"
+    Cart->>PlaceOrder: execute(cartItems)
+    PlaceOrder->>OrderRepo: place(orderItems)
+    OrderRepo-->>PlaceOrder: order
+    PlaceOrder->>EventBus: emit(OrderPlaced, order)
+    EventBus->>CartComposable: OrderPlaced
+    CartComposable->>CartComposable: clear()
+    PlaceOrder-->>Cart: order
+    Cart->>Cart: navigateTo(/orders/id)
+```
+
+Domains don't know about each other — `usePlaceOrder` emits an event, `useCart` independently decides to react.
 
 ### Dependency Injection
 
@@ -294,29 +329,36 @@ This is fine. Just like composables, Nuxt auto-imported components **are** the d
 
 Each context follows the **Onion / Clean Architecture** principle — dependencies point inward:
 
-```
-┌──────────────────────────────────────────┐
-│              app/ (outer ring)           │
-│   components, composables, pages         │
-│                                          │
-│   ┌──────────────────────────────────┐   │
-│   │    infrastructure/ (middle ring) │   │
-│   │    adapters, fakes, mappers      │   │
-│   │                                  │   │
-│   │   ┌──────────────────────────┐   │   │
-│   │   │    domain/ (core)        │   │   │
-│   │   │    model, port, events   │   │   │
-│   │   │                          │   │   │
-│   │   │    pure TypeScript       │   │   │
-│   │   │    no imports from       │   │   │
-│   │   │    outer rings           │   │   │
-│   │   └──────────────────────────┘   │   │
-│   │                                  │   │
-│   │   knows about: domain/           │   │
-│   └──────────────────────────────────┘   │
-│                                          │
-│   knows about: domain/, infrastructure/  │
-└──────────────────────────────────────────┘
+```mermaid
+graph TB
+  subgraph APP ["app/ — outer ring"]
+    direction LR
+    A1[components]
+    A2[composables]
+    A3[pages]
+  end
+
+  subgraph INFRA ["infrastructure/ — middle ring"]
+    direction LR
+    I1[adapters]
+    I2[fakes]
+    I3[mappers]
+  end
+
+  subgraph DOMAIN ["domain/ — core"]
+    direction LR
+    D1[model]
+    D2[port]
+    D3[events]
+  end
+
+  APP -->|imports| INFRA
+  APP -->|imports| DOMAIN
+  INFRA -->|implements ports| DOMAIN
+
+  style DOMAIN fill:#dbeafe,stroke:#2563eb,stroke-width:3px
+  style INFRA fill:#f0fdf4,stroke:#16a34a,stroke-width:2px
+  style APP fill:#fefce8,stroke:#ca8a04,stroke-width:1px
 ```
 
 **Key rule: dependencies only point inward, never outward.**
