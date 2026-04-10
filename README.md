@@ -87,6 +87,47 @@ app/                                # Root application (thin)
 
 ---
 
+## Context Map
+
+How bounded contexts relate to each other. Arrows show dependency direction — who knows about whom.
+
+```
+┌─────────────────────────────────────────────────────┐
+│                       shared                        │
+│            money.ts · useEvents · UiButton           │
+└──────────▲──────────▲──────────▲────────────────────┘
+           │          │          │
+           │ imports   │ imports   │ imports
+           │          │          │
+┌──────────┴───┐ ┌────┴─────┐ ┌──┴──────────┐
+│   catalog    │ │   cart   │ │   orders    │
+│              │ │          │ │             │
+│ Product      │ │ CartItem │ │ Order       │
+│ useProducts  │ │ useCart   │ │ useOrders   │
+│              │ │          │ │ usePlaceOrder│
+└──────────────┘ └──────────┘ └─────────────┘
+       │              ▲  ▲           │
+       │              │  │           │
+       └──────────────┘  └───────────┘
+        useCart().addItem()  events: OrderPlaced
+        (direct call)       (saga → cart.clear)
+```
+
+**Dependencies:**
+- `cart` -> `catalog`: imports `Product` type via index.ts
+- `cart` -> `orders`: listens to `OrderPlaced` event (Saga)
+- `orders` -> `cart`: imports `CartItem` type via index.ts
+- `catalog` -> `cart`: calls `useCart().addItem()` in UI components (direct)
+- Everyone -> `shared`: value objects, event bus, UI kit
+
+**Rules:**
+- Arrows point **toward the dependency** (who you import from)
+- Direct calls — for UI-initiated actions
+- Events — for side effects across contexts
+- `shared` has no dependencies on other contexts
+
+---
+
 ## Mapping DDD to the frontend
 
 The main pain point — DDD was invented for backend in Java/C#. On the frontend there's no ORM, no transactions, no middleware. Here's how patterns adapt:
