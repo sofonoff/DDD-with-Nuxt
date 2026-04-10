@@ -495,6 +495,32 @@ FSD is a good methodology for React projects on Vite where the framework doesn't
 
 ---
 
+## This is not micro-frontends (and not just "folders")
+
+A common reaction: "So these are micro-frontends?" or "This is just splitting by folders."
+
+Neither. These are three different things:
+
+| | Folder split | DDD + Nuxt Layers | Micro-frontends |
+|---|---|---|---|
+| **What it is** | `features/cart/`, `features/catalog/` in one app | Each layer = bounded context with domain/infra/app | Separate apps, separate builds, separate deploys |
+| **Build** | One build | One build | Multiple builds |
+| **Deploy** | One deploy | One deploy | Independent deploys |
+| **Runtime** | One Vue instance | One Vue instance | Multiple frameworks possible |
+| **Boundaries** | Convention (nothing enforces them) | Enforced: ESLint rules, index.ts, events | Enforced: separate repos/processes |
+| **Shared state** | Global store, easy to couple | Via composables + events, explicit contracts | Via custom events / postMessage |
+| **Complexity** | Low | Medium | High |
+
+**Folder split** — you create `features/cart/` and `features/catalog/`, but nothing prevents `cart/` from importing `catalog/`'s internals. Boundaries exist only in your head.
+
+**DDD + Layers** — boundaries are enforced: ESLint blocks cross-context imports, `index.ts` defines the public API, events decouple side effects. But it's still **one application** — one build, one deploy, one Vue instance. The `layers/` directory is a Nuxt mechanism for code organization, not separate apps.
+
+**Micro-frontends** — truly separate applications. Different repos, different builds, possibly different frameworks. Communication via `postMessage` or custom events. Necessary when teams need independent deploy cycles. Overkill for most projects.
+
+**This template is the middle ground:** stronger boundaries than folders, simpler than micro-frontends. If you outgrow it — each layer can be extracted into a separate repo/micro-frontend later, because the boundaries are already clean.
+
+---
+
 ## ACL (Anti-Corruption Layer)
 
 In a real project, the API response format rarely matches the domain model. The API might return `image_url` while the domain uses `image`, or use `snake_case` while the domain uses `camelCase`.
