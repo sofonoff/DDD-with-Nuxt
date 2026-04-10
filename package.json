@@ -5,15 +5,21 @@
   "scripts": {
     "dev": "nuxt dev",
     "build": "nuxt build",
-    "preview": "nuxt preview"
+    "preview": "nuxt preview",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "lint": "eslint ."
   },
   "dependencies": {
+    "@pinia/nuxt": "^0.11.3",
     "nuxt": "^4.0.0",
-    "pinia": "^3.0.4",
-    "@pinia/nuxt": "^0.11.3"
+    "pinia": "^3.0.4"
   },
   "devDependencies": {
+    "@nuxt/eslint": "^1.15.2",
+    "eslint": "^9.39.4",
     "typescript": "^5.7.0",
+    "vitest": "^4.1.4",
     "vue-tsc": "^2.2.0"
   }
 }

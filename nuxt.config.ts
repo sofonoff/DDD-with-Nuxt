@@ -4,5 +4,12 @@
  */
 
 export default defineNuxtConfig({
-  modules: ['@pinia/nuxt'],
+  modules: ['@pinia/nuxt', '@nuxt/eslint'],
+
+  runtimeConfig: {
+    public: {
+      /** Переключение адаптеров: 'real' (по умолчанию) или 'fake' */
+      adapterMode: 'real',
+    },
+  },
 })

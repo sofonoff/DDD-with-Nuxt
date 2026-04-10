@@ -2,8 +2,13 @@ English | **[Русский](README.ru.md)**
 
 # DDD with Nuxt 4
 
-An e-commerce template built on **Nuxt 4** with **Domain-Driven Design** architecture.  
+**DDD + Clean Architecture** template for large-scale **Nuxt 4** applications.  
 Framework-native approach: the architecture is built on top of [Nuxt Layers](https://nuxt.com/docs/4.x/directory-structure/layers), not against the framework.
+
+DDD defines **what** goes where (entities, ports, events, bounded contexts).  
+Clean Architecture defines **how** layers relate (dependencies point inward, domain knows nothing about the outside).
+
+E-commerce is used as an example domain — the patterns apply to any complex frontend project.
 
 If you know what Bounded Context, Aggregate and Port are — but don't understand how they map to the frontend — this repo is for you.
 
@@ -233,17 +238,94 @@ Composables get dependencies via `useNuxtApp().$productRepo` — they don't impo
 
 ---
 
-## Dependency rules
+## Shared layer (Shared Kernel)
+
+Nuxt auto-imports components from **all** layers. This means `ProductCard` from catalog is technically available in orders. This breaks DDD boundaries.
+
+**Rule: domain components stay in their domain. If a component is needed by multiple domains — it moves to shared.**
+
+`shared/` is the **Shared Kernel** in DDD terms. It contains everything used across multiple contexts:
+
+```
+layers/shared/
+  domain/
+    money.ts                    # Value Object — types + pure functions
+  app/
+    composables/
+      useEvents.ts              # Event bus
+    components/ui/
+      Button.vue                # <UiButton>
+      Input.vue                 # <UiInput>
+      Modal.vue                 # <UiModal>
+      PriceTag.vue              # <UiPriceTag> — used in catalog, cart, orders
+```
+
+Example: `PriceTag` started as a `<span>` with `formatMoney()` copy-pasted in every domain. Three domains needed price display → moved to shared as `<UiPriceTag>`:
+
+```vue
+<!-- Before: copy-pasted in every domain -->
+<span>{{ formatMoney(money(product.price)) }}</span>
+
+<!-- After: shared component, auto-imported everywhere -->
+<UiPriceTag :amount="product.price" />
+```
+
+**What goes to shared:**
+- UI primitives (buttons, inputs, modals) — needed everywhere
+- Value Objects (Money) — used across domains
+- Cross-cutting composables (event bus) — infrastructure for domain communication
+
+**What stays in the domain (but may be used by others):**
+- `ProductCard` — belongs to catalog, but Nuxt auto-imports it globally
+- `CartButton` — belongs to cart, used in root `app.vue`
+- Domain composables — `useCart`, `useProducts`
+
+This is fine. Just like composables, Nuxt auto-imported components **are** the domain's public UI API. `CartItem` component belongs to cart semantically — moving it to shared just because orders needs it would be wrong. It stays in cart, others use it via auto-import.
+
+**When to actually move to shared:**
+- The component has **no domain logic** (pure UI primitive like Button, Input, PriceTag)
+- Multiple domains need it AND it doesn't belong to any specific domain
+
+---
+
+## Dependency rules (Onion Architecture)
 
 ### Within a context
 
+Each context follows the **Onion / Clean Architecture** principle — dependencies point inward:
+
 ```
-app/            → knows about domain/ and infrastructure/
-infrastructure/ → knows about domain/
-domain/         → knows about nobody
+┌──────────────────────────────────────────┐
+│              app/ (outer ring)           │
+│   components, composables, pages         │
+│                                          │
+│   ┌──────────────────────────────────┐   │
+│   │    infrastructure/ (middle ring) │   │
+│   │    adapters, fakes, mappers      │   │
+│   │                                  │   │
+│   │   ┌──────────────────────────┐   │   │
+│   │   │    domain/ (core)        │   │   │
+│   │   │    model, port, events   │   │   │
+│   │   │                          │   │   │
+│   │   │    pure TypeScript       │   │   │
+│   │   │    no imports from       │   │   │
+│   │   │    outer rings           │   │   │
+│   │   └──────────────────────────┘   │   │
+│   │                                  │   │
+│   │   knows about: domain/           │   │
+│   └──────────────────────────────────┘   │
+│                                          │
+│   knows about: domain/, infrastructure/  │
+└──────────────────────────────────────────┘
 ```
 
-Domain is the core. It doesn't import Vue, $fetch, or Nuxt. Pure TypeScript.
+**Key rule: dependencies only point inward, never outward.**
+
+- **domain/** — the core. Doesn't import Vue, $fetch, Nuxt, or anything from outer rings. Pure TypeScript. If you delete `app/` and `infrastructure/` — domain still compiles.
+- **infrastructure/** — knows about domain (implements its ports). Doesn't know about app/ (components, composables, pages).
+- **app/** — the outer ring. Knows about everything inside. This is where Nuxt lives — components, composables, pages.
+
+Why this matters: you can replace `infrastructure/` (swap REST for GraphQL) without touching `domain/` or `app/`. You can redesign `app/` (new UI) without touching `domain/` or `infrastructure/`. The core business logic is protected from framework and API changes.
 
 ### Between contexts
 
@@ -327,7 +409,7 @@ No `mount()`, `wrapper.find()`, `mockNuxtApp()`.
 
 **Learning curve.** The team must understand why port is separated from adapter, why event bus instead of a direct call. Without team buy-in — it turns into cargo cult.
 
-**Type duplication.** `Product` is described in `model.ts`, re-exported in `index.ts`, used in `port.ts`. For TypeScript this is normal (types are erased at compile time), but visually it seems redundant.
+**Re-exports.** `Product` is defined in `model.ts`, re-exported in `index.ts`, referenced in `port.ts`. This is not true duplication (single source of truth), but it can feel verbose. The trade-off is explicit public API boundaries.
 
 **Event bus is a weak spot.** In production, `useEvents()` is a simple in-memory pub/sub. No delivery guarantee, no replay, no ordering. For complex scenarios you need something more robust.
 
@@ -413,6 +495,110 @@ FSD is a good methodology for React projects on Vite where the framework doesn't
 
 ---
 
+## ACL (Anti-Corruption Layer)
+
+In a real project, the API response format rarely matches the domain model. The API might return `image_url` while the domain uses `image`, or use `snake_case` while the domain uses `camelCase`.
+
+The mapper converts between them:
+
+```ts
+// infrastructure/product.mapper.ts
+
+interface ProductApiDTO {
+  id: string
+  name: string
+  image_url: string       // API format
+  category_name: string
+}
+
+function toDomain(dto: ProductApiDTO): Product {
+  return {
+    ...dto,
+    image: dto.image_url,          // mapping: image_url → image
+    category: dto.category_name,   // mapping: category_name → category
+  }
+}
+```
+
+**Without mapper:** API field rename breaks domain, composables, and all components.  
+**With mapper:** API field rename breaks only `product.mapper.ts`.
+
+See [`layers/catalog/infrastructure/product.mapper.ts`](layers/catalog/infrastructure/product.mapper.ts) for the full example.
+
+---
+
+## Testing
+
+Domain is pure functions — tested without Vue, Nuxt, or mocks:
+
+```bash
+npm run test        # watch mode
+npm run test:run    # single run
+```
+
+```ts
+// cart.model.test.ts
+import { addToCart, emptyCart, cartTotal } from '../cart.model'
+
+it('calculates total correctly', () => {
+  let cart = addToCart(emptyCart(), headphones)  // $299.99
+  cart = addToCart(cart, keyboard)                // + $149.99
+  expect(cartTotal(cart)).toBeCloseTo(449.98)
+})
+
+it('operations are immutable', () => {
+  const original = emptyCart()
+  const withItem = addToCart(original, headphones)
+  expect(original.items).toHaveLength(0)  // original untouched
+})
+```
+
+25 tests across all domains — run in ~200ms. No browser, no DOM, no framework bootstrap.
+
+Test files live next to the code they test: `domain/__tests__/cart.model.test.ts`.
+
+---
+
+## Switching adapters
+
+Adapters can be swapped via environment variable — no code changes needed:
+
+```bash
+# Real adapters (default) — calls server API
+npm run dev
+
+# Fake adapters — in-memory, no server needed
+NUXT_PUBLIC_ADAPTER_MODE=fake npm run dev
+```
+
+Or add to `.env`:
+```
+NUXT_PUBLIC_ADAPTER_MODE=fake
+```
+
+This is configured in [`app/plugins/providers.ts`](app/plugins/providers.ts) — the single DI entry point.
+
+---
+
+## ESLint boundaries
+
+ESLint rule prevents developers from bypassing context boundaries:
+
+```ts
+// ❌ ESLint error: don't import from another context's domain/
+import { createOrder } from '../orders/domain/order.model'
+
+// ❌ ESLint error: don't import from another context's infrastructure/
+import { orderAdapter } from '../orders/infrastructure/order.adapter'
+
+// ✅ Allowed: import from public API
+import type { Order } from '../orders'
+```
+
+Within your own context — imports are unrestricted. The rule only applies when crossing boundaries.
+
+---
+
 ## Quick start
 
 ```bash
@@ -452,6 +638,7 @@ Nuxt will pick up the new layer automatically — pages, components, composables
 
 - **Nuxt 4** — framework
 - **TypeScript** — type safety
-- **Pinia** — (connected as a module, example uses `useState` for state)
+- **Vitest** — domain testing
+- **ESLint** — boundary enforcement
 - **Nuxt Layers** — bounded context isolation
 - **Nitro** — server routes (mock API)

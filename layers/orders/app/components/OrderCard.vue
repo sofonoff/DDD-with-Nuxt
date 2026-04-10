@@ -13,7 +13,7 @@
     </div>
     <p class="order-card__items">{{ order.items.length }} позиций</p>
     <div class="order-card__footer">
-      <span class="order-card__total">{{ formatMoney(money(order.total)) }}</span>
+      <UiPriceTag :amount="order.total" />
       <NuxtLink :to="`/orders/${order.id}`">Подробнее</NuxtLink>
     </div>
   </div>
@@ -21,7 +21,6 @@
 
 <script setup lang="ts">
 import type { Order } from '../../domain/order.model'
-import { money, formatMoney } from '~~/layers/shared/domain/money'
 
 const props = defineProps<{ order: Order }>()
 

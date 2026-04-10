@@ -12,7 +12,7 @@
       <div class="detail__info">
         <span class="detail__category">{{ current.category }}</span>
         <h1>{{ current.name }}</h1>
-        <p class="detail__price">{{ formatMoney(money(current.price)) }}</p>
+        <UiPriceTag :amount="current.price" large />
         <p>{{ current.description }}</p>
         <UiButton @click="handleAddToCart">В корзину</UiButton>
         <NuxtLink to="/catalog" class="detail__back">Назад к каталогу</NuxtLink>
@@ -22,8 +22,6 @@
 </template>
 
 <script setup lang="ts">
-import { money, formatMoney } from '~~/layers/shared/domain/money'
-
 const route = useRoute()
 const { current, loading, error, fetchById } = useProducts()
 const { addItem } = useCart()

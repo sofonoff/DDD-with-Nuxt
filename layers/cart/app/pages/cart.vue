@@ -19,7 +19,7 @@
         <img :src="item.product.image" :alt="item.product.name" width="80" height="60" />
         <div class="cart-item__info">
           <h3>{{ item.product.name }}</h3>
-          <p>{{ formatMoney(money(item.product.price)) }}</p>
+          <UiPriceTag :amount="item.product.price" />
         </div>
         <div class="cart-item__quantity">
           <button @click="updateQuantity(item.product.id, item.quantity - 1)">-</button>
@@ -31,7 +31,7 @@
 
       <div class="cart-footer">
         <div class="cart-total">
-          Итого: <strong>{{ formatMoney(money(totalPrice)) }}</strong>
+          Итого: <strong><UiPriceTag :amount="totalPrice" large /></strong>
         </div>
         <div class="cart-footer__actions">
           <UiButton variant="secondary" @click="clear">Очистить</UiButton>
@@ -46,8 +46,6 @@
 </template>
 
 <script setup lang="ts">
-import { money, formatMoney } from '~~/layers/shared/domain/money'
-
 const { items, totalPrice, removeItem, updateQuantity, clear } = useCart()
 const { execute: placeOrder, loading: orderLoading, error: orderError } = usePlaceOrder()
 

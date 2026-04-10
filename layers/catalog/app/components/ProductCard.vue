@@ -8,7 +8,7 @@
     <img :src="product.image" :alt="product.name" />
     <div class="product-card__body">
       <h3>{{ product.name }}</h3>
-      <p class="product-card__price">{{ formatMoney(money(product.price)) }}</p>
+      <UiPriceTag :amount="product.price" />
       <div class="product-card__actions">
         <NuxtLink :to="`/catalog/${product.id}`">Подробнее</NuxtLink>
         <UiButton @click="$emit('add-to-cart', product)">В корзину</UiButton>
@@ -19,7 +19,6 @@
 
 <script setup lang="ts">
 import type { Product } from '../../domain/product.model'
-import { money, formatMoney } from '~~/layers/shared/domain/money'
 
 defineProps<{ product: Product }>()
 defineEmits<{ 'add-to-cart': [product: Product] }>()

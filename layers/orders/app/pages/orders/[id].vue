@@ -16,12 +16,12 @@
       <div class="order-detail__items">
         <div v-for="item in current.items" :key="item.productId" class="order-detail__item">
           <span>{{ item.productName }}</span>
-          <span>{{ item.quantity }} x {{ formatMoney(money(item.price)) }}</span>
+          <span>{{ item.quantity }} x <UiPriceTag :amount="item.price" /></span>
         </div>
       </div>
 
       <div class="order-detail__total">
-        Итого: <strong>{{ formatMoney(money(current.total)) }}</strong>
+        Итого: <strong><UiPriceTag :amount="current.total" large /></strong>
       </div>
 
       <div class="order-detail__actions">
@@ -32,8 +32,6 @@
 </template>
 
 <script setup lang="ts">
-import { money, formatMoney } from '~~/layers/shared/domain/money'
-
 const route = useRoute()
 const { current, loading, error, fetchById } = useOrders()
 
