@@ -1,6 +1,7 @@
 # DDD with Nuxt 4
 
-Шаблон e-commerce приложения на **Nuxt 4** с архитектурой **Domain-Driven Design**.
+Шаблон e-commerce приложения на **Nuxt 4** с архитектурой **Domain-Driven Design**.  
+Framework-native подход: архитектура строится поверх [Nuxt Layers](https://nuxt.com/docs/4.x/directory-structure/layers), а не вопреки фреймворку.
 
 Если ты знаешь что такое Bounded Context, Aggregate и Port — но не понимаешь как это ложится на фронтенд — этот репозиторий для тебя.
 
@@ -269,6 +270,70 @@ assert(cartTotal(cart) === 299.99)
 | Микрофронтенд / несколько команд | DDD + Layers + возможно отдельные репозитории |
 
 Правило: **если ты не можешь назвать хотя бы 3 bounded context'а в своём проекте — DDD тебе не нужен.**
+
+---
+
+## А что насчёт FSD?
+
+[Feature-Sliced Design](https://feature-sliced.design/) — популярная методология структуры фронтенда. Частый вопрос: "почему не FSD?"
+
+Короткий ответ: **FSD и DDD решают разные задачи, и FSD плохо ложится на Nuxt.**
+
+### FSD не учитывает фреймворк
+
+FSD — framework-agnostic методология. Она предлагает фиксированные слои: `shared → entities → features → widgets → pages → app`. Проблема в том, что Nuxt **уже имеет** конвенции для `pages/`, `components/`, `composables/`, `server/` с авто-сканированием и авто-импортом.
+
+Попытка натянуть FSD на Nuxt приводит к конфликтам:
+
+```
+# FSD хочет так:
+src/
+  entities/product/ui/ProductCard.vue
+  features/add-to-cart/ui/AddToCartButton.vue
+  pages/catalog/ui/CatalogPage.vue
+
+# Nuxt хочет так:
+app/
+  components/ProductCard.vue     ← авто-импорт
+  pages/catalog/index.vue        ← file-based routing
+  composables/useCart.ts         ← авто-импорт
+```
+
+Либо ты следуешь FSD и теряешь авто-импорт, file-based routing и server routes. Либо следуешь Nuxt и ломаешь FSD. Третьего не дано.
+
+### DDD + Nuxt Layers — framework-native
+
+В этом шаблоне архитектура **не борется** с Nuxt, а использует его встроенный механизм Layers:
+
+```
+layers/catalog/
+  app/
+    components/    ← авто-импорт работает
+    composables/   ← авто-импорт работает
+    pages/         ← file-based routing работает
+  server/api/      ← серверные роуты работают
+  domain/          ← чистый TS, вне авто-скана
+  infrastructure/  ← чистый TS, вне авто-скана
+```
+
+`app/` внутри каждого layer — стандартная Nuxt-структура. `domain/` и `infrastructure/` — обычные TypeScript-папки вне авто-сканирования. Никаких хаков.
+
+### Разные уровни абстракции
+
+FSD отвечает на вопрос **"как нарезать UI на слои?"** — это про организацию компонентов и фич.
+
+DDD отвечает на вопрос **"как отразить бизнес-домен в коде?"** — это про модель, контракты и границы между доменами.
+
+| | FSD | DDD + Layers |
+|---|---|---|
+| Уровень | Организация файлов | Архитектура бизнес-логики |
+| Группировка | По техническому слою | По бизнес-домену |
+| Фреймворк | Agnostic (и в этом проблема) | Native для Nuxt |
+| Связи | Strict import rules по слоям | Через index.ts и события |
+| Server routes | Не предусмотрены | В каждом layer |
+| Подходит для | React CRA/Vite без конвенций | Nuxt, возможно Next.js |
+
+FSD — хорошая методология для React-проектов на Vite, где фреймворк не навязывает структуру. Для Nuxt — лучше использовать то, что фреймворк уже предлагает.
 
 ---
 
