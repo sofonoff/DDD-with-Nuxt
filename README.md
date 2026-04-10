@@ -1,63 +1,65 @@
+English | **[Русский](README.ru.md)**
+
 # DDD with Nuxt 4
 
-Шаблон e-commerce приложения на **Nuxt 4** с архитектурой **Domain-Driven Design**.  
-Framework-native подход: архитектура строится поверх [Nuxt Layers](https://nuxt.com/docs/4.x/directory-structure/layers), а не вопреки фреймворку.
+An e-commerce template built on **Nuxt 4** with **Domain-Driven Design** architecture.  
+Framework-native approach: the architecture is built on top of [Nuxt Layers](https://nuxt.com/docs/4.x/directory-structure/layers), not against the framework.
 
-Если ты знаешь что такое Bounded Context, Aggregate и Port — но не понимаешь как это ложится на фронтенд — этот репозиторий для тебя.
-
----
-
-## Зачем DDD на фронтенде?
-
-Фронтенд вырос. Это уже не "формочки и кнопочки". Современный SPA/SSR — это:
-- Десятки доменов (каталог, корзина, заказы, пользователь, оплата...)
-- Бизнес-логика на клиенте (валидация, расчёты, состояния)
-- Несколько источников данных (REST, WebSocket, localStorage, IndexedDB)
-- Команда из 5+ фронтендеров, которые не должны ломать код друг друга
-
-Классический подход "pages + components + composables в одной куче" перестаёт работать на масштабе. DDD даёт чёткие границы и правила, кто с кем общается.
+If you know what Bounded Context, Aggregate and Port are — but don't understand how they map to the frontend — this repo is for you.
 
 ---
 
-## Структура проекта
+## Why DDD on the frontend?
 
-Каждый **layer** — это один **Bounded Context**. Внутри три чётких слоя:
+Frontend has grown up. It's no longer just "forms and buttons". A modern SPA/SSR is:
+- Dozens of domains (catalog, cart, orders, user, payment...)
+- Business logic on the client (validation, calculations, state machines)
+- Multiple data sources (REST, WebSocket, localStorage, IndexedDB)
+- A team of 5+ frontend developers who shouldn't break each other's code
+
+The classic "pages + components + composables in one pile" approach stops working at scale. DDD provides clear boundaries and rules for who talks to whom.
+
+---
+
+## Project structure
+
+Each **layer** is one **Bounded Context**. Inside — three clear layers:
 
 ```
 layers/
-  catalog/                          # Bounded Context: каталог товаров
-    domain/                         # ЧТО это такое
-      product.model.ts              #   Entity, Value Objects, бизнес-правила
-      product.port.ts               #   Контракт репозитория (интерфейс)
+  catalog/                          # Bounded Context: product catalog
+    domain/                         # WHAT it is
+      product.model.ts              #   Entity, Value Objects, business rules
+      product.port.ts               #   Repository contract (interface)
       product.events.ts             #   Domain Events
-    infrastructure/                 # ОТКУДА данные
-      product.adapter.ts            #   Реализация через $fetch (проd)
-      product.fake.ts               #   Фейк для разработки и тестов
-    app/                            # КАК выглядит (Nuxt auto-scan)
+    infrastructure/                 # WHERE data comes from
+      product.adapter.ts            #   Implementation via $fetch (prod)
+      product.fake.ts               #   Fake for development and tests
+    app/                            # HOW it looks (Nuxt auto-scan)
       composables/useProducts.ts    #   Query (CQRS)
       components/                   #   ProductCard, ProductList
       pages/catalog/                #   /catalog, /catalog/:id
     server/api/products/            # BFF (mock API)
-    index.ts                        # Публичное API контекста
+    index.ts                        # Public API of the context
 
-  cart/                             # Bounded Context: корзина
+  cart/                             # Bounded Context: shopping cart
     domain/
-      cart.model.ts                 #   Aggregate + чистые функции
-      cart.port.ts                  #   Контракт (localStorage)
+      cart.model.ts                 #   Aggregate + pure functions
+      cart.port.ts                  #   Contract (localStorage)
       cart.events.ts                #   ItemAdded, CartCleared
     infrastructure/
       cart.adapter.ts               #   localStorage
-      cart.fake.ts                  #   In-memory для тестов
+      cart.fake.ts                  #   In-memory for tests
     app/
       composables/useCart.ts        #   Aggregate + Saga
       components/CartButton.vue
       pages/cart.vue
     index.ts
 
-  orders/                           # Bounded Context: заказы
+  orders/                           # Bounded Context: orders
     domain/
       order.model.ts                #   Entity, createOrder(), canCancel()
-      order.port.ts                 #   Контракт
+      order.port.ts                 #   Contract
       order.events.ts               #   OrderPlaced, OrderCancelled
     infrastructure/
       order.adapter.ts              #   HTTP
@@ -70,56 +72,56 @@ layers/
       pages/orders/
     index.ts
 
-  shared/                           # Общий код между контекстами
+  shared/                           # Shared code across contexts
     domain/
       money.ts                      #   Value Object
     app/
-      composables/useEvents.ts      #   Шина событий
+      composables/useEvents.ts      #   Event bus
       components/ui/                #   UiButton, UiInput, UiModal
 
-app/                                # Корневое приложение (тонкое)
-  plugins/providers.ts              #   DI: provide всех адаптеров
+app/                                # Root application (thin)
+  plugins/providers.ts              #   DI: provide all adapters
   app.vue                           #   Layout
-  pages/index.vue                   #   Лендинг
+  pages/index.vue                   #   Landing
 ```
 
 ---
 
-## Маппинг DDD на фронтенд
+## Mapping DDD to the frontend
 
-Главная боль — DDD придумали для бэкенда на Java/C#. На фронте нет ORM, нет транзакций, нет middleware. Вот как паттерны адаптируются:
+The main pain point — DDD was invented for backend in Java/C#. On the frontend there's no ORM, no transactions, no middleware. Here's how patterns adapt:
 
-| DDD-паттерн | Бэкенд | Фронтенд (Nuxt) |
+| DDD pattern | Backend | Frontend (Nuxt) |
 |---|---|---|
-| **Bounded Context** | Микросервис | Nuxt Layer |
-| **Entity / Aggregate** | Класс с методами | `*.model.ts` — интерфейс + чистые функции |
-| **Value Object** | Immutable class | `money.ts` — frozen object + хелперы |
-| **Repository (порт)** | Interface | `*.port.ts` — TypeScript interface |
-| **Repository (адаптер)** | Impl с ORM | `*.adapter.ts` — $fetch / localStorage |
-| **Domain Service** | Stateless class | Чистая функция в model |
-| **Domain Event** | Message broker | `useEvents()` — простая шина |
+| **Bounded Context** | Microservice | Nuxt Layer |
+| **Entity / Aggregate** | Class with methods | `*.model.ts` — interface + pure functions |
+| **Value Object** | Immutable class | `money.ts` — frozen object + helpers |
+| **Repository (port)** | Interface | `*.port.ts` — TypeScript interface |
+| **Repository (adapter)** | Impl with ORM | `*.adapter.ts` — $fetch / localStorage |
+| **Domain Service** | Stateless class | Pure function in model |
+| **Domain Event** | Message broker | `useEvents()` — simple bus |
 | **Use Case / Command** | Application Service | Composable (`usePlaceOrder`) |
 | **Query** | Read model | Composable (`useOrders`) |
-| **Saga** | Orchestrator | Event listener в composable |
+| **Saga** | Orchestrator | Event listener in composable |
 | **DI Container** | Spring / DI framework | Nuxt plugin (`providers.ts`) |
-| **Фейк / Мок** | Test double | `*.fake.ts` — подменяется в providers |
+| **Fake / Mock** | Test double | `*.fake.ts` — swapped in providers |
 
 ---
 
-## Ключевые паттерны в действии
+## Key patterns in action
 
 ### Ports & Adapters (Hexagonal Architecture)
 
-Domain определяет **что** нужно (порт), infrastructure определяет **как** (адаптер):
+Domain defines **what** is needed (port), infrastructure defines **how** (adapter):
 
 ```ts
-// domain/product.port.ts — контракт
+// domain/product.port.ts — contract
 export interface ProductRepository {
   getAll(): Promise<Product[]>
   getById(id: string): Promise<Product>
 }
 
-// infrastructure/product.adapter.ts — реализация (прод)
+// infrastructure/product.adapter.ts — implementation (prod)
 export function createProductAdapter(): ProductRepository {
   return {
     async getAll() { return $fetch('/api/products') },
@@ -127,7 +129,7 @@ export function createProductAdapter(): ProductRepository {
   }
 }
 
-// infrastructure/product.fake.ts — реализация (dev/тесты)
+// infrastructure/product.fake.ts — implementation (dev/tests)
 export function createProductFake(): ProductRepository {
   return {
     async getAll() { return fakeProducts },
@@ -136,132 +138,130 @@ export function createProductFake(): ProductRepository {
 }
 ```
 
-Переключение между реальным API и фейком — одна строка в `providers.ts`.
+Switching between real API and fake — one line in `providers.ts`.
 
 ### CQRS (Command Query Responsibility Segregation)
 
-Чтение и запись — разные composables:
+Reading and writing — separate composables:
 
 ```ts
-// useOrders.ts — Query: только читает
+// useOrders.ts — Query: read only
 export function useOrders() {
   async function fetchAll() { /* ... */ }
   return { orders, loading, error, fetchAll }
 }
 
-// usePlaceOrder.ts — Command: только пишет
+// usePlaceOrder.ts — Command: write only
 export function usePlaceOrder() {
   async function execute(items: CartItem[]) { /* ... */ }
   return { execute, loading, error }
 }
 ```
 
-**Зачем разделять?** Query можно кэшировать, дедуплицировать, SSR'ить. Command — нет. Разные жизненные циклы, разные оптимизации.
+**Why separate?** Queries can be cached, deduplicated, SSR'd. Commands can't. Different lifecycles, different optimizations.
 
 ### Domain Events + Saga
 
-Контексты не вызывают друг друга напрямую. Они общаются через события:
-
 ```ts
-// usePlaceOrder.ts — эмитит событие после успеха
+// usePlaceOrder.ts — emits event after success
 const order = await $orderRepo.place(orderItems)
 events.emit(OrderEvents.OrderPlaced, order)
 
-// useCart.ts — слушает и реагирует (Saga)
+// useCart.ts — listens and reacts (Saga)
 events.on(OrderEvents.OrderPlaced, () => clear())
 ```
 
-**Поток:** Пользователь жмёт "Оформить заказ" → `usePlaceOrder` создаёт заказ → эмитит `OrderPlaced` → `useCart` слышит событие → очищает корзину. Домены не знают друг о друге.
+**Flow:** User clicks "Place Order" -> `usePlaceOrder` creates the order -> emits `OrderPlaced` -> `useCart` hears the event -> clears the cart. Domains don't know about each other.
 
 ### Dependency Injection
 
-Все адаптеры подключаются в одном месте:
+All adapters are wired in one place:
 
 ```ts
 // app/plugins/providers.ts
 export default defineNuxtPlugin(() => ({
   provide: {
-    productRepo: createProductAdapter(),  // ← замени на createProductFake() для dev
+    productRepo: createProductAdapter(),  // ← swap with createProductFake() for dev
     cartRepo:    createCartAdapter(),
     orderRepo:   createOrderAdapter(),
   },
 }))
 ```
 
-Composables получают зависимости через `useNuxtApp().$productRepo` — не импортируют адаптер напрямую.
+Composables get dependencies via `useNuxtApp().$productRepo` — they don't import the adapter directly.
 
 ---
 
-## Правила связей
+## Dependency rules
 
-### Внутри контекста
+### Within a context
 
 ```
-app/            → знает про domain/ и infrastructure/
-infrastructure/ → знает про domain/
-domain/         → не знает ни про кого
+app/            → knows about domain/ and infrastructure/
+infrastructure/ → knows about domain/
+domain/         → knows about nobody
 ```
 
-Domain — ядро. Оно не импортирует ни Vue, ни $fetch, ни Nuxt. Чистый TypeScript.
+Domain is the core. It doesn't import Vue, $fetch, or Nuxt. Pure TypeScript.
 
-### Между контекстами
+### Between contexts
 
-На фронтенде контексты общаются **двумя способами** — и оба легальны:
+On the frontend, contexts communicate in **two ways** — both are legitimate:
 
-**1. Прямой вызов** — когда UI явно инициирует действие:
+**1. Direct call** — when the UI explicitly initiates an action:
 
 ```ts
-// ProductList.vue — пользователь нажал "В корзину"
-const { addItem } = useCart()       // composable из другого контекста
-addItem(product)                    // прямой, синхронный вызов
+// ProductList.vue — user clicked "Add to Cart"
+const { addItem } = useCart()       // composable from another context
+addItem(product)                    // direct, synchronous call
 ```
 
-Composables автоимпортируются Nuxt из каждого layer — это и есть публичное API контекста на уровне UI. Здесь события были бы оверинжинирингом: пользователь нажал кнопку → товар добавлен. Точка.
+Composables are auto-imported by Nuxt from each layer — this is the context's public API at the UI level. Events here would be overengineering: user clicked a button -> item added. Period.
 
-**2. События** — когда вызывающий не должен знать о последствиях:
+**2. Events** — when the caller shouldn't know about consequences:
 
 ```ts
-// usePlaceOrder.ts — заказ оформлен, что дальше — не его дело
+// usePlaceOrder.ts — order placed, what happens next is not its concern
 events.emit(OrderEvents.OrderPlaced, order)
 
-// useCart.ts — сам решает реагировать
+// useCart.ts — decides to react on its own
 events.on(OrderEvents.OrderPlaced, () => clear())
 ```
 
-Заказ не знает про корзину. Корзина сама подписалась. Завтра на `OrderPlaced` подпишется ещё и аналитика — orders не трогаем.
+The order doesn't know about the cart. The cart subscribed itself. Tomorrow analytics will also subscribe to `OrderPlaced` — orders stay untouched.
 
-**Когда что использовать:**
+**When to use what:**
 
-| Ситуация | Подход | Пример |
+| Situation | Approach | Example |
 |---|---|---|
-| UI-действие: "сделай X прямо сейчас" | Прямой вызов composable | `useCart().addItem(product)` |
-| Побочный эффект: "X случилось, реагируйте кто хочет" | Событие | `OrderPlaced → cart.clear()` |
-| Общие утилиты, UI-компоненты | Shared layer | `UiButton`, `formatMoney()` |
+| UI action: "do X right now" | Direct composable call | `useCart().addItem(product)` |
+| Side effect: "X happened, react if you want" | Event | `OrderPlaced -> cart.clear()` |
+| Shared utilities, UI components | Shared layer | `UiButton`, `formatMoney()` |
 
-**Что запрещено** — лезть внутрь чужого контекста:
+**What's forbidden** — reaching into another context's internals:
 
 ```ts
-// НЕПРАВИЛЬНО — импорт из чужого infrastructure/
+// WRONG — import from another's infrastructure/
 import { orderAdapter } from '../orders/infrastructure/order.adapter'
 
-// НЕПРАВИЛЬНО — импорт из чужого domain/ напрямую (в обход index.ts)
+// WRONG — import from another's domain/ directly (bypassing index.ts)
 import { createOrder } from '../orders/domain/order.model'
 
-// ПРАВИЛЬНО — через публичное API
+// CORRECT — via public API
 import type { Order } from '../orders'           // index.ts
 import { OrderEvents } from '../orders'           // index.ts
-const { fetchAll } = useOrders()                  // авто-импорт composable
+const { fetchAll } = useOrders()                  // auto-imported composable
 ```
 
-`index.ts` — публичное API для типов и констант. Composables — публичное API для логики (через авто-импорт Nuxt). `domain/` и `infrastructure/` — приватные.
+`index.ts` — public API for types and constants. Composables — public API for logic (via Nuxt auto-import). `domain/` and `infrastructure/` are private.
 
 ---
 
-## Плюсы
+## Pros
 
-**Масштабируемость команды.** Два фронтендера могут параллельно работать над `catalog/` и `orders/` — они физически не могут сломать код друг друга, если соблюдают границы.
+**Team scalability.** Two frontend devs can work on `catalog/` and `orders/` in parallel — they physically can't break each other's code if they respect boundaries.
 
-**Тестируемость.** Domain — чистые функции без фреймворков. Тестируются простым `assert`:
+**Testability.** Domain is pure functions without frameworks. Tested with simple `assert`:
 
 ```ts
 import { addToCart, emptyCart, cartTotal } from './cart.model'
@@ -270,109 +270,109 @@ const cart = addToCart(emptyCart(), product)
 assert(cartTotal(cart) === 299.99)
 ```
 
-Никаких `mount()`, `wrapper.find()`, `mockNuxtApp()`.
+No `mount()`, `wrapper.find()`, `mockNuxtApp()`.
 
-**Заменяемость.** Сегодня данные из REST API, завтра из GraphQL, послезавтра из gRPC — меняется только адаптер. Domain и UI не трогаются.
+**Replaceability.** Today data comes from REST API, tomorrow from GraphQL, day after from gRPC — only the adapter changes. Domain and UI stay untouched.
 
-**Понятность.** Новый разработчик открывает `layers/` — видит бизнес-домены. Открывает `domain/` — видит модель. Не нужно искать "где тут логика корзины" среди 200 файлов в `composables/`.
+**Clarity.** A new developer opens `layers/` — sees business domains. Opens `domain/` — sees the model. No need to search for "where's the cart logic" among 200 files in `composables/`.
 
-**SSR / Vercel.** Каждый layer может иметь свой `server/api/` — BFF прямо рядом с фронтом. Деплоится как единое Nuxt-приложение.
-
----
-
-## Минусы
-
-**Бойлерплейт.** Для простого CRUD с двумя страницами — это оверинжиниринг. Если у тебя лендинг + форма обратной связи, DDD не нужен.
-
-**Кривая обучения.** Команда должна понимать зачем port отделён от adapter, зачем event bus вместо прямого вызова. Без buy-in от команды — превратится в карго-культ.
-
-**Дублирование типов.** `Product` описан и в `model.ts`, и переэкспортирован в `index.ts`, и используется в `port.ts`. Для TypeScript это нормально (типы стираются при компиляции), но визуально кажется избыточным.
-
-**Event bus — слабое место.** В продакшене `useEvents()` — это простой pub/sub в памяти. Нет гарантии доставки, нет replay, нет порядка. Для сложных сценариев нужно что-то серьёзнее.
-
-**Не всё ложится на фронт.** Aggregate root из DDD — про консистентность при concurrent writes. На фронте один пользователь, один поток. Паттерн полезен для инкапсуляции, но "aggregate boundary" тут скорее организационная, а не техническая.
+**SSR / Vercel.** Each layer can have its own `server/api/` — BFF right next to the frontend. Deployed as a single Nuxt application.
 
 ---
 
-## Когда использовать
+## Cons
 
-| Ситуация | Подход |
+**Boilerplate.** For a simple CRUD with two pages — this is overengineering. If you have a landing page + contact form, you don't need DDD.
+
+**Learning curve.** The team must understand why port is separated from adapter, why event bus instead of a direct call. Without team buy-in — it turns into cargo cult.
+
+**Type duplication.** `Product` is described in `model.ts`, re-exported in `index.ts`, used in `port.ts`. For TypeScript this is normal (types are erased at compile time), but visually it seems redundant.
+
+**Event bus is a weak spot.** In production, `useEvents()` is a simple in-memory pub/sub. No delivery guarantee, no replay, no ordering. For complex scenarios you need something more robust.
+
+**Not everything maps to the frontend.** Aggregate root in DDD is about consistency under concurrent writes. On the frontend there's one user, one thread. The pattern is useful for encapsulation, but "aggregate boundary" here is more organizational than technical.
+
+---
+
+## When to use
+
+| Situation | Approach |
 |---|---|
-| Лендинг, блог, простой сайт | Обычная структура Nuxt |
-| 3-5 страниц, один разработчик | Обычная структура Nuxt |
-| 10+ страниц, 2-3 разработчика | Nuxt Layers без DDD (просто разбить по фичам) |
-| Много доменов, 5+ разработчиков, сложная бизнес-логика | **DDD + Layers** |
-| Микрофронтенд / несколько команд | DDD + Layers + возможно отдельные репозитории |
+| Landing page, blog, simple site | Standard Nuxt structure |
+| 3-5 pages, one developer | Standard Nuxt structure |
+| 10+ pages, 2-3 developers | Nuxt Layers without DDD (just split by features) |
+| Many domains, 5+ developers, complex business logic | **DDD + Layers** |
+| Micro-frontend / multiple teams | DDD + Layers + possibly separate repositories |
 
-Правило: **если ты не можешь назвать хотя бы 3 bounded context'а в своём проекте — DDD тебе не нужен.**
+Rule of thumb: **if you can't name at least 3 bounded contexts in your project — you don't need DDD.**
 
 ---
 
-## А что насчёт FSD?
+## What about FSD?
 
-[Feature-Sliced Design](https://feature-sliced.design/) — популярная методология структуры фронтенда. Частый вопрос: "почему не FSD?"
+[Feature-Sliced Design](https://feature-sliced.design/) is a popular frontend structure methodology. Common question: "why not FSD?"
 
-Короткий ответ: **FSD и DDD решают разные задачи, и FSD плохо ложится на Nuxt.**
+Short answer: **FSD and DDD solve different problems, and FSD doesn't fit Nuxt well.**
 
-### FSD не учитывает фреймворк
+### FSD doesn't account for the framework
 
-FSD — framework-agnostic методология. Она предлагает фиксированные слои: `shared → entities → features → widgets → pages → app`. Проблема в том, что Nuxt **уже имеет** конвенции для `pages/`, `components/`, `composables/`, `server/` с авто-сканированием и авто-импортом.
+FSD is a framework-agnostic methodology. It proposes fixed layers: `shared -> entities -> features -> widgets -> pages -> app`. The problem is that Nuxt **already has** conventions for `pages/`, `components/`, `composables/`, `server/` with auto-scanning and auto-import.
 
-Попытка натянуть FSD на Nuxt приводит к конфликтам:
+Trying to force FSD onto Nuxt leads to conflicts:
 
 ```
-# FSD хочет так:
+# FSD wants this:
 src/
   entities/product/ui/ProductCard.vue
   features/add-to-cart/ui/AddToCartButton.vue
   pages/catalog/ui/CatalogPage.vue
 
-# Nuxt хочет так:
+# Nuxt wants this:
 app/
-  components/ProductCard.vue     ← авто-импорт
+  components/ProductCard.vue     ← auto-import
   pages/catalog/index.vue        ← file-based routing
-  composables/useCart.ts         ← авто-импорт
+  composables/useCart.ts         ← auto-import
 ```
 
-Либо ты следуешь FSD и теряешь авто-импорт, file-based routing и server routes. Либо следуешь Nuxt и ломаешь FSD. Третьего не дано.
+Either you follow FSD and lose auto-import, file-based routing and server routes. Or you follow Nuxt and break FSD. There's no middle ground.
 
 ### DDD + Nuxt Layers — framework-native
 
-В этом шаблоне архитектура **не борется** с Nuxt, а использует его встроенный механизм Layers:
+In this template the architecture **doesn't fight** Nuxt, it uses its built-in Layers mechanism:
 
 ```
 layers/catalog/
   app/
-    components/    ← авто-импорт работает
-    composables/   ← авто-импорт работает
-    pages/         ← file-based routing работает
-  server/api/      ← серверные роуты работают
-  domain/          ← чистый TS, вне авто-скана
-  infrastructure/  ← чистый TS, вне авто-скана
+    components/    ← auto-import works
+    composables/   ← auto-import works
+    pages/         ← file-based routing works
+  server/api/      ← server routes work
+  domain/          ← pure TS, outside auto-scan
+  infrastructure/  ← pure TS, outside auto-scan
 ```
 
-`app/` внутри каждого layer — стандартная Nuxt-структура. `domain/` и `infrastructure/` — обычные TypeScript-папки вне авто-сканирования. Никаких хаков.
+`app/` inside each layer is standard Nuxt structure. `domain/` and `infrastructure/` are plain TypeScript folders outside auto-scanning. No hacks.
 
-### Разные уровни абстракции
+### Different levels of abstraction
 
-FSD отвечает на вопрос **"как нарезать UI на слои?"** — это про организацию компонентов и фич.
+FSD answers the question **"how to slice UI into layers?"** — it's about organizing components and features.
 
-DDD отвечает на вопрос **"как отразить бизнес-домен в коде?"** — это про модель, контракты и границы между доменами.
+DDD answers the question **"how to reflect the business domain in code?"** — it's about models, contracts and boundaries between domains.
 
 | | FSD | DDD + Layers |
 |---|---|---|
-| Уровень | Организация файлов | Архитектура бизнес-логики |
-| Группировка | По техническому слою | По бизнес-домену |
-| Фреймворк | Agnostic (и в этом проблема) | Native для Nuxt |
-| Связи | Strict import rules по слоям | Через index.ts и события |
-| Server routes | Не предусмотрены | В каждом layer |
-| Подходит для | React CRA/Vite без конвенций | Nuxt, возможно Next.js |
+| Level | File organization | Business logic architecture |
+| Grouping | By technical layer | By business domain |
+| Framework | Agnostic (and that's the problem) | Native to Nuxt |
+| Dependencies | Strict import rules by layers | Via index.ts and events |
+| Server routes | Not accounted for | In each layer |
+| Best for | React CRA/Vite without conventions | Nuxt, possibly Next.js |
 
-FSD — хорошая методология для React-проектов на Vite, где фреймворк не навязывает структуру. Для Nuxt — лучше использовать то, что фреймворк уже предлагает.
+FSD is a good methodology for React projects on Vite where the framework doesn't dictate structure. For Nuxt — better to use what the framework already provides.
 
 ---
 
-## Быстрый старт
+## Quick start
 
 ```bash
 git clone https://github.com/sofonoff/DDD-with-Nuxt.git
@@ -381,36 +381,36 @@ npm install
 npm run dev
 ```
 
-Откроется на `http://localhost:3000`.
+Opens at `http://localhost:3000`.
 
-Роуты:
-- `/` — лендинг
-- `/catalog` — каталог товаров
-- `/catalog/:id` — детальная страница
-- `/cart` — корзина с оформлением заказа
-- `/orders` — список заказов
-
----
-
-## Как добавить новый Bounded Context
-
-1. Создай `layers/payment/`
-2. Внутри — `domain/`, `infrastructure/`, `app/`, `index.ts`, `nuxt.config.ts`
-3. Опиши модель в `domain/payment.model.ts`
-4. Определи порт в `domain/payment.port.ts`
-5. Реализуй адаптер в `infrastructure/payment.adapter.ts`
-6. Зарегистрируй адаптер в `app/plugins/providers.ts`
-7. Создай composable в `app/composables/`
-8. Экспортируй публичное API в `index.ts`
-
-Nuxt подхватит новый layer автоматически — pages, components, composables зарегистрируются без конфигурации.
+Routes:
+- `/` — landing
+- `/catalog` — product catalog
+- `/catalog/:id` — product detail page
+- `/cart` — cart with order placement
+- `/orders` — order list
 
 ---
 
-## Стек
+## Adding a new Bounded Context
 
-- **Nuxt 4** — фреймворк
-- **TypeScript** — типизация
-- **Pinia** — (подключён как модуль, в примере state через `useState`)
-- **Nuxt Layers** — изоляция bounded contexts
-- **Nitro** — серверные роуты (mock API)
+1. Create `layers/payment/`
+2. Inside — `domain/`, `infrastructure/`, `app/`, `index.ts`, `nuxt.config.ts`
+3. Describe the model in `domain/payment.model.ts`
+4. Define the port in `domain/payment.port.ts`
+5. Implement the adapter in `infrastructure/payment.adapter.ts`
+6. Register the adapter in `app/plugins/providers.ts`
+7. Create a composable in `app/composables/`
+8. Export the public API in `index.ts`
+
+Nuxt will pick up the new layer automatically — pages, components, composables will register without configuration.
+
+---
+
+## Stack
+
+- **Nuxt 4** — framework
+- **TypeScript** — type safety
+- **Pinia** — (connected as a module, example uses `useState` for state)
+- **Nuxt Layers** — bounded context isolation
+- **Nitro** — server routes (mock API)
