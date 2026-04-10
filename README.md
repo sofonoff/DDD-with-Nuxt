@@ -206,19 +206,54 @@ Domain — ядро. Оно не импортирует ни Vue, ни $fetch, �
 
 ### Между контекстами
 
+На фронтенде контексты общаются **двумя способами** — и оба легальны:
+
+**1. Прямой вызов** — когда UI явно инициирует действие:
+
 ```ts
-// Правильно — через публичное API (index.ts)
-import { useOrders } from '../orders'
-import type { Product } from '../catalog'
-
-// Правильно — через события
-events.on('orders:OrderPlaced', () => cart.clear())
-
-// НЕПРАВИЛЬНО — лезем внутрь чужого контекста
-import { orderAdapter } from '../orders/infrastructure/order.adapter'
+// ProductList.vue — пользователь нажал "В корзину"
+const { addItem } = useCart()       // composable из другого контекста
+addItem(product)                    // прямой, синхронный вызов
 ```
 
-`index.ts` — единственный легальный вход в контекст. Он экспортирует типы и события, но не реализацию.
+Composables автоимпортируются Nuxt из каждого layer — это и есть публичное API контекста на уровне UI. Здесь события были бы оверинжинирингом: пользователь нажал кнопку → товар добавлен. Точка.
+
+**2. События** — когда вызывающий не должен знать о последствиях:
+
+```ts
+// usePlaceOrder.ts — заказ оформлен, что дальше — не его дело
+events.emit(OrderEvents.OrderPlaced, order)
+
+// useCart.ts — сам решает реагировать
+events.on(OrderEvents.OrderPlaced, () => clear())
+```
+
+Заказ не знает про корзину. Корзина сама подписалась. Завтра на `OrderPlaced` подпишется ещё и аналитика — orders не трогаем.
+
+**Когда что использовать:**
+
+| Ситуация | Подход | Пример |
+|---|---|---|
+| UI-действие: "сделай X прямо сейчас" | Прямой вызов composable | `useCart().addItem(product)` |
+| Побочный эффект: "X случилось, реагируйте кто хочет" | Событие | `OrderPlaced → cart.clear()` |
+| Общие утилиты, UI-компоненты | Shared layer | `UiButton`, `formatMoney()` |
+
+**Что запрещено** — лезть внутрь чужого контекста:
+
+```ts
+// НЕПРАВИЛЬНО — импорт из чужого infrastructure/
+import { orderAdapter } from '../orders/infrastructure/order.adapter'
+
+// НЕПРАВИЛЬНО — импорт из чужого domain/ напрямую (в обход index.ts)
+import { createOrder } from '../orders/domain/order.model'
+
+// ПРАВИЛЬНО — через публичное API
+import type { Order } from '../orders'           // index.ts
+import { OrderEvents } from '../orders'           // index.ts
+const { fetchAll } = useOrders()                  // авто-импорт composable
+```
+
+`index.ts` — публичное API для типов и констант. Composables — публичное API для логики (через авто-импорт Nuxt). `domain/` и `infrastructure/` — приватные.
 
 ---
 
