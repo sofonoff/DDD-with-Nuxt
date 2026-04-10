@@ -1,7 +1,7 @@
 /**
- * Модель домена Cart — Aggregate.
- * Описывает корзину, её элементы и бизнес-правила.
- * Чистые функции — вся логика тестируется без Vue и API.
+ * Cart domain model — Aggregate.
+ * Describes the cart, its items, and business rules.
+ * Pure functions — all logic is tested without Vue or API.
  */
 
 import type { Product } from '../../catalog/domain/product.model'

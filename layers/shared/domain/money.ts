@@ -1,7 +1,7 @@
 /**
- * Value Object — деньги.
- * Неизменяемый объект, определяется значением, а не идентичностью.
- * Используется для работы с ценами во всех доменах.
+ * Value Object — Money.
+ * Immutable object, defined by value rather than identity.
+ * Used for working with prices across all domains.
  */
 
 export interface Money {

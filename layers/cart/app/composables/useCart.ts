@@ -1,7 +1,7 @@
 /**
  * Composable / useCart — Aggregate.
- * Управляет состоянием корзины, делегирует логику в domain/cart.model.ts.
- * Слушает событие OrderPlaced (Saga) — автоматически очищает корзину после оформления заказа.
+ * Manages cart state, delegates logic to domain/cart.model.ts.
+ * Listens to the OrderPlaced event (Saga) — automatically clears the cart after an order is placed.
  */
 
 import type { Product } from '~~/layers/catalog/domain/product.model'
@@ -27,12 +27,12 @@ export function useCart() {
   const totalItems = computed(() => cartItemCount(cart.value))
   const totalPrice = computed(() => cartTotal(cart.value))
 
-  /** Сохранить текущее состояние в репозиторий */
+  /** Save current state to the repository */
   async function persist() {
     await $cartRepo.save(cart.value)
   }
 
-  /** Загрузить корзину из репозитория */
+  /** Load cart from the repository */
   async function load() {
     cart.value = await $cartRepo.load()
   }
@@ -60,7 +60,7 @@ export function useCart() {
     persist()
   }
 
-  // Saga: очистить корзину когда заказ оформлен
+  // Saga: clear the cart when an order is placed
   events.on(OrderEvents.OrderPlaced, () => clear())
 
   return { items, totalItems, totalPrice, addItem, removeItem, updateQuantity, clear, load }

@@ -1,7 +1,7 @@
 /**
- * Тесты доменной модели Cart.
- * Чистые функции — тестируются без Vue, без Nuxt, без моков.
- * Это главное преимущество DDD на фронте: бизнес-логика тестируется мгновенно.
+ * Tests for the Cart domain model.
+ * Pure functions — tested without Vue, Nuxt, or mocks.
+ * This is the main advantage of DDD on the frontend: business logic is tested instantly.
  */
 
 import { describe, it, expect } from 'vitest'

@@ -1,8 +1,8 @@
 /**
  * Composable / usePlaceOrder — Command (CQRS) + Saga.
- * Оформляет заказ: отправляет данные через репозиторий,
- * эмитит событие OrderPlaced — на которое реагируют другие контексты.
- * Пример Saga: cart слушает OrderPlaced и очищает корзину.
+ * Places an order: sends data through the repository,
+ * emits the OrderPlaced event — which other contexts react to.
+ * Saga example: cart listens to OrderPlaced and clears the cart.
  */
 
 import type { CartItem } from '~~/layers/cart/domain/cart.model'
@@ -15,7 +15,7 @@ export function usePlaceOrder() {
   const loading = ref(false)
   const error = ref<string | null>(null)
 
-  /** Преобразовать CartItem[] в OrderItem[] */
+  /** Convert CartItem[] to OrderItem[] */
   function toOrderItems(cartItems: CartItem[]): OrderItem[] {
     return cartItems.map((item) => ({
       productId: item.product.id,
@@ -32,12 +32,12 @@ export function usePlaceOrder() {
       const orderItems = toOrderItems(cartItems)
       const order = await $orderRepo.place(orderItems)
 
-      // Saga: эмитим событие — cart подписан и очистит себя
+      // Saga: emit event — cart is subscribed and will clear itself
       events.emit(OrderEvents.OrderPlaced, order)
 
       return order
     } catch {
-      error.value = 'Не удалось оформить заказ'
+      error.value = 'Failed to place order'
       return null
     } finally {
       loading.value = false

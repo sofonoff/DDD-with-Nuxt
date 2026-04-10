@@ -1,7 +1,7 @@
 /**
- * Публичное API контекста Cart.
- * Другие контексты импортируют типы и события ТОЛЬКО отсюда.
- * Для логики — используй composable useCart() (авто-импорт Nuxt).
+ * Public API of the Cart context.
+ * Other contexts import types and events ONLY from here.
+ * For logic — use the useCart() composable (Nuxt auto-import).
  */
 
 export type { Cart, CartItem } from './domain/cart.model'

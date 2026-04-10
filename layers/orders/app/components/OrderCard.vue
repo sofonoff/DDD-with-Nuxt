@@ -1,20 +1,20 @@
 <!--
-  Компонент / OrderCard — карточка заказа в списке.
-  Часть контекста Orders.
+  Component / OrderCard — order card in list.
+  Part of the Orders context.
 -->
 
 <template>
   <div class="order-card">
     <div class="order-card__header">
-      <span class="order-card__id">Заказ #{{ order.id }}</span>
+      <span class="order-card__id">Order #{{ order.id }}</span>
       <span class="order-card__status" :class="`order-card__status--${order.status}`">
         {{ statusLabel }}
       </span>
     </div>
-    <p class="order-card__items">{{ order.items.length }} позиций</p>
+    <p class="order-card__items">{{ order.items.length }} items</p>
     <div class="order-card__footer">
       <UiPriceTag :amount="order.total" />
-      <NuxtLink :to="`/orders/${order.id}`">Подробнее</NuxtLink>
+      <NuxtLink :to="`/orders/${order.id}`">Details</NuxtLink>
     </div>
   </div>
 </template>
@@ -25,11 +25,11 @@ import type { Order } from '../../domain/order.model'
 const props = defineProps<{ order: Order }>()
 
 const statusLabels: Record<string, string> = {
-  pending: 'Ожидает',
-  confirmed: 'Подтверждён',
-  shipped: 'Отправлен',
-  delivered: 'Доставлен',
-  cancelled: 'Отменён',
+  pending: 'Pending',
+  confirmed: 'Confirmed',
+  shipped: 'Shipped',
+  delivered: 'Delivered',
+  cancelled: 'Cancelled',
 }
 
 const statusLabel = computed(() => statusLabels[props.order.status] ?? props.order.status)

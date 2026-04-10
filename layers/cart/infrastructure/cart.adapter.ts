@@ -1,6 +1,6 @@
 /**
- * Адаптер — реализация CartRepository через localStorage.
- * Сохраняет и восстанавливает корзину между сессиями.
+ * Adapter — CartRepository implementation via localStorage.
+ * Saves and restores the cart between sessions.
  */
 
 import type { Cart } from '../domain/cart.model'

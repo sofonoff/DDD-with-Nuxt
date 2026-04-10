@@ -1,24 +1,24 @@
 /**
- * ACL (Anti-Corruption Layer) — маппер между API и доменной моделью.
+ * ACL (Anti-Corruption Layer) — mapper between API and domain model.
  *
- * Зачем: API отдаёт данные в своём формате (snake_case, вложенные объекты,
- * лишние поля). Домен работает со своей моделью. Маппер конвертирует между ними.
+ * Why: the API returns data in its own format (snake_case, nested objects,
+ * extra fields). The domain works with its own model. The mapper converts between them.
  *
- * Без маппера: изменение API ломает domain и все компоненты.
- * С маппером: изменение API ломает только этот файл.
+ * Without a mapper: API changes break the domain and all components.
+ * With a mapper: API changes only break this file.
  */
 
 import type { Product } from '../domain/product.model'
 
-/** Формат данных, который приходит от API (может отличаться от доменной модели) */
+/** Data format coming from the API (may differ from the domain model) */
 export interface ProductApiDTO {
   id: string
   name: string
   slug: string
   description: string
   price: number
-  image_url: string       // API отдаёт snake_case
-  category_name: string   // API отдаёт другое имя поля
+  image_url: string       // API returns snake_case
+  category_name: string   // API returns a different field name
 }
 
 /** API DTO → Domain Model */
@@ -29,12 +29,12 @@ export function toDomain(dto: ProductApiDTO): Product {
     slug: dto.slug,
     description: dto.description,
     price: dto.price,
-    image: dto.image_url,          // маппинг: image_url → image
-    category: dto.category_name,   // маппинг: category_name → category
+    image: dto.image_url,          // mapping: image_url → image
+    category: dto.category_name,   // mapping: category_name → category
   }
 }
 
-/** Domain Model → API DTO (если нужно отправить на сервер) */
+/** Domain Model → API DTO (when sending data to the server) */
 export function toDTO(product: Product): ProductApiDTO {
   return {
     id: product.id,

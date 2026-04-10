@@ -1,7 +1,7 @@
 /**
- * Порт домена Cart — контракт репозитория.
- * Абстракция для сохранения/загрузки состояния корзины.
- * В реальном проекте: localStorage, API, или IndexedDB.
+ * Cart domain port — repository contract.
+ * Abstraction for saving/loading cart state.
+ * In a real project: localStorage, API, or IndexedDB.
  */
 
 import type { Cart } from './cart.model'

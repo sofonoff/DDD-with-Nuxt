@@ -1,11 +1,11 @@
 <!--
-  Страница / /catalog/:id — детальная страница товара.
-  Межконтекстное взаимодействие: useProducts() + useCart().addItem().
+  Page / /catalog/:id — product detail page.
+  Cross-context interaction: useProducts() + useCart().addItem().
 -->
 
 <template>
   <div>
-    <div v-if="loading" class="detail__status">Загрузка...</div>
+    <div v-if="loading" class="detail__status">Loading...</div>
     <div v-else-if="error" class="detail__status">{{ error }}</div>
     <div v-else-if="current" class="detail">
       <img :src="current.image" :alt="current.name" />
@@ -14,8 +14,8 @@
         <h1>{{ current.name }}</h1>
         <UiPriceTag :amount="current.price" large />
         <p>{{ current.description }}</p>
-        <UiButton @click="handleAddToCart">В корзину</UiButton>
-        <NuxtLink to="/catalog" class="detail__back">Назад к каталогу</NuxtLink>
+        <UiButton @click="handleAddToCart">Add to Cart</UiButton>
+        <NuxtLink to="/catalog" class="detail__back">Back to Catalog</NuxtLink>
       </div>
     </div>
   </div>

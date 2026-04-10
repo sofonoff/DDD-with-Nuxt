@@ -1,7 +1,7 @@
 <!--
-  Корневая оболочка приложения.
-  Тонкий слой: навигация и слот NuxtPage.
-  CartButton автоимпортируется из контекста Cart.
+  Root application shell.
+  Thin layer: navigation and NuxtPage slot.
+  CartButton is auto-imported from the Cart context.
 -->
 
 <template>
@@ -10,8 +10,8 @@
       <nav class="nav">
         <NuxtLink to="/" class="nav__logo">DDD Store</NuxtLink>
         <div class="nav__links">
-          <NuxtLink to="/catalog">Каталог</NuxtLink>
-          <NuxtLink to="/orders">Заказы</NuxtLink>
+          <NuxtLink to="/catalog">Catalog</NuxtLink>
+          <NuxtLink to="/orders">Orders</NuxtLink>
           <CartButton />
         </div>
       </nav>

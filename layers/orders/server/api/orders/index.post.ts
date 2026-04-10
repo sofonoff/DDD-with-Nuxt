@@ -1,6 +1,6 @@
 /**
- * Server API / POST /api/orders — создаёт новый заказ.
- * Мок: генерирует ID и сохраняет в память.
+ * Server API / POST /api/orders — creates a new order.
+ * Mock: generates an ID and saves to memory.
  */
 
 import { orders, nextId } from './store'

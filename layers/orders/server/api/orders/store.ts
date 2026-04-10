@@ -1,6 +1,6 @@
 /**
- * Серверное хранилище заказов (in-memory).
- * Общее состояние между GET и POST хэндлерами.
+ * Server-side order storage (in-memory).
+ * Shared state between GET and POST handlers.
  */
 
 export const orders: Array<{

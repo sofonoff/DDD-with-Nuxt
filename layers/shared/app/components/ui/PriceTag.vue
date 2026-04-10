@@ -1,7 +1,7 @@
 <!--
-  UI / PriceTag — отображение цены.
-  Живёт в shared, потому что нужен нескольким доменам (catalog, cart, orders).
-  Если компонент нужен только одному домену — он остаётся в том домене.
+  UI / PriceTag — price display.
+  Lives in shared because it is needed by multiple domains (catalog, cart, orders).
+  If a component is needed by only one domain, it stays in that domain.
 -->
 
 <template>

@@ -1,12 +1,12 @@
 /**
- * Domain Events домена Orders.
- * Имена событий, которые этот контекст может эмитить.
- * Пример Saga: cart слушает OrderPlaced и очищает корзину.
+ * Orders domain events.
+ * Event names that this context can emit.
+ * Saga example: cart listens to OrderPlaced and clears the cart.
  */
 
 export const OrderEvents = {
-  /** Заказ оформлен */
+  /** Order placed */
   OrderPlaced: 'orders:OrderPlaced',
-  /** Заказ отменён */
+  /** Order cancelled */
   OrderCancelled: 'orders:OrderCancelled',
 } as const

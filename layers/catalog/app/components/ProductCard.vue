@@ -1,6 +1,6 @@
 <!--
-  Компонент / ProductCard — карточка товара в сетке.
-  Часть контекста Catalog. Авторегистрируется Nuxt.
+  Component / ProductCard — product card in grid.
+  Part of the Catalog context. Auto-registered by Nuxt.
 -->
 
 <template>
@@ -10,8 +10,8 @@
       <h3>{{ product.name }}</h3>
       <UiPriceTag :amount="product.price" />
       <div class="product-card__actions">
-        <NuxtLink :to="`/catalog/${product.id}`">Подробнее</NuxtLink>
-        <UiButton @click="$emit('add-to-cart', product)">В корзину</UiButton>
+        <NuxtLink :to="`/catalog/${product.id}`">Details</NuxtLink>
+        <UiButton @click="$emit('add-to-cart', product)">Add to Cart</UiButton>
       </div>
     </div>
   </div>

@@ -1,6 +1,6 @@
 /**
- * Фейк — реализация CartRepository в памяти.
- * Для тестов и разработки без localStorage.
+ * Fake — in-memory CartRepository implementation.
+ * For tests and development without localStorage.
  */
 
 import type { Cart } from '../domain/cart.model'

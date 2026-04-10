@@ -1,15 +1,15 @@
 <!--
-  Страница / / — лендинг.
-  Живёт в корневом app, не в доменном layer.
+  Page / / — landing page.
+  Lives in root app, not in a domain layer.
 -->
 
 <template>
   <div>
     <h1>DDD Store</h1>
-    <p>Пример e-commerce на Nuxt 4 с Domain-Driven Design через layers.</p>
+    <p>An e-commerce example on Nuxt 4 with Domain-Driven Design via layers.</p>
     <div class="home-links">
       <NuxtLink to="/catalog">
-        <UiButton>Перейти в каталог</UiButton>
+        <UiButton>Browse Catalog</UiButton>
       </NuxtLink>
     </div>
   </div>

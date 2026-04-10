@@ -1,7 +1,7 @@
 /**
- * Порт домена Orders — контракт репозитория.
- * Определяет операции с заказами.
- * Реализации (adapter, fake) лежат в infrastructure/.
+ * Orders domain port — repository contract.
+ * Defines operations with orders.
+ * Implementations (adapter, fake) are in infrastructure/.
  */
 
 import type { Order, OrderItem } from './order.model'

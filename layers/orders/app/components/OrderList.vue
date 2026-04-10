@@ -1,14 +1,14 @@
 <!--
-  Компонент / OrderList — список заказов.
-  Часть контекста Orders.
+  Component / OrderList — order list.
+  Part of the Orders context.
 -->
 
 <template>
   <div>
-    <div v-if="loading" class="order-list__status">Загрузка...</div>
+    <div v-if="loading" class="order-list__status">Loading...</div>
     <div v-else-if="error" class="order-list__status order-list__error">{{ error }}</div>
     <div v-else-if="orders.length === 0" class="order-list__status">
-      Заказов пока нет
+      No orders yet
     </div>
     <div v-else class="order-list">
       <OrderCard v-for="order in orders" :key="order.id" :order="order" />

@@ -1,6 +1,6 @@
 <!--
-  UI / Button — базовая кнопка.
-  Часть shared layer, доступна во всех доменах как <UiButton>.
+  UI / Button — basic button.
+  Part of the shared layer, available in all domains as <UiButton>.
 -->
 
 <template>

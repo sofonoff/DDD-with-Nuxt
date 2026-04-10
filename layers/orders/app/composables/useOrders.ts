@@ -1,6 +1,6 @@
 /**
  * Composable / useOrders — Query (CQRS).
- * Читает список заказов. Не меняет данные — только запрашивает.
+ * Reads the list of orders. Does not modify data — only queries.
  */
 
 import type { Order } from '../../domain/order.model'
@@ -18,7 +18,7 @@ export function useOrders() {
     try {
       orders.value = await $orderRepo.getAll()
     } catch {
-      error.value = 'Не удалось загрузить заказы'
+      error.value = 'Failed to load orders'
     } finally {
       loading.value = false
     }
@@ -30,7 +30,7 @@ export function useOrders() {
     try {
       current.value = await $orderRepo.getById(id)
     } catch {
-      error.value = 'Заказ не найден'
+      error.value = 'Order not found'
     } finally {
       loading.value = false
     }

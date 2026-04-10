@@ -1,6 +1,6 @@
 /**
- * Фейк — реализация OrderRepository в памяти.
- * Генерирует заказы локально без сервера.
+ * Fake — in-memory OrderRepository implementation.
+ * Generates orders locally without a server.
  */
 
 import type { Order, OrderItem } from '../domain/order.model'

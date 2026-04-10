@@ -1,11 +1,11 @@
 /**
- * DI-плагин — provide всех адаптеров.
- * Единственное место, где infrastructure подключается к приложению.
+ * DI plugin — provides all adapters.
+ * The only place where infrastructure connects to the application.
  *
- * Переключение adapter/fake через env:
+ * Switch between adapter/fake via env:
  *   NUXT_PUBLIC_ADAPTER_MODE=fake npm run dev
  *
- * Или в .env:
+ * Or in .env:
  *   NUXT_PUBLIC_ADAPTER_MODE=fake
  */
 

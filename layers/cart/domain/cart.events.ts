@@ -1,13 +1,13 @@
 /**
- * Domain Events домена Cart.
- * Имена событий, которые этот контекст может эмитить.
+ * Cart domain events.
+ * Event names that this context can emit.
  */
 
 export const CartEvents = {
-  /** Товар добавлен в корзину */
+  /** Product added to cart */
   ItemAdded: 'cart:ItemAdded',
-  /** Товар удалён из корзины */
+  /** Product removed from cart */
   ItemRemoved: 'cart:ItemRemoved',
-  /** Корзина очищена */
+  /** Cart cleared */
   CartCleared: 'cart:CartCleared',
 } as const

@@ -1,6 +1,6 @@
 /**
- * Адаптер — реализация OrderRepository через HTTP ($fetch).
- * Вызывает серверные эндпоинты для работы с заказами.
+ * Adapter — OrderRepository implementation via HTTP ($fetch).
+ * Calls server endpoints for working with orders.
  */
 
 import type { Order, OrderItem } from '../domain/order.model'

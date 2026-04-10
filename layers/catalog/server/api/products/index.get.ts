@@ -1,7 +1,7 @@
 /**
- * Server API / GET /api/products — возвращает все товары.
- * Мок-данные. В продакшене — запрос к БД или внешнему API.
- * Nuxt автоматически регистрирует серверные роуты из layers.
+ * Server API / GET /api/products — returns all products.
+ * Mock data. In production — database or external API query.
+ * Nuxt automatically registers server routes from layers.
  */
 
 const products = [

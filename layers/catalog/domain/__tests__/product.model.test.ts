@@ -1,5 +1,5 @@
 /**
- * Тесты доменной модели Product.
+ * Tests for the Product domain model.
  */
 
 import { describe, it, expect } from 'vitest'

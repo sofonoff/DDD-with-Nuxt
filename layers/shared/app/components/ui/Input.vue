@@ -1,6 +1,6 @@
 <!--
-  UI / Input — базовый текстовый инпут.
-  Часть shared layer, доступна во всех доменах как <UiInput>.
+  UI / Input — basic text input.
+  Part of the shared layer, available in all domains as <UiInput>.
 -->
 
 <template>

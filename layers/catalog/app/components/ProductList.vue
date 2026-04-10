@@ -1,11 +1,11 @@
 <!--
-  Компонент / ProductList — сетка товаров.
-  Часть контекста Catalog. Межконтекстное взаимодействие: вызывает useCart().addItem().
+  Component / ProductList — product grid.
+  Part of the Catalog context. Cross-context interaction: calls useCart().addItem().
 -->
 
 <template>
   <div>
-    <div v-if="loading" class="product-list__status">Загрузка...</div>
+    <div v-if="loading" class="product-list__status">Loading...</div>
     <div v-else-if="error" class="product-list__status product-list__error">{{ error }}</div>
     <div v-else class="product-list">
       <ProductCard

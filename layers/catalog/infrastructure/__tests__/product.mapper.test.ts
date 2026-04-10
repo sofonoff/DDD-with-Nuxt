@@ -1,6 +1,6 @@
 /**
- * Тесты ACL-маппера Product.
- * Проверяем что конвертация API DTO ↔ Domain Model работает корректно.
+ * Tests for the Product ACL mapper.
+ * Verifies that API DTO ↔ Domain Model conversion works correctly.
  */
 
 import { describe, it, expect } from 'vitest'

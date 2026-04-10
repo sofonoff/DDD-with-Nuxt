@@ -1,7 +1,7 @@
 /**
- * Публичное API контекста Orders.
- * Другие контексты импортируют типы и события ТОЛЬКО отсюда.
- * Для логики — используй useOrders() / usePlaceOrder() (авто-импорт Nuxt).
+ * Public API of the Orders context.
+ * Other contexts import types and events ONLY from here.
+ * For logic — use useOrders() / usePlaceOrder() (Nuxt auto-import).
  */
 
 export type { Order, OrderItem, OrderStatus } from './domain/order.model'

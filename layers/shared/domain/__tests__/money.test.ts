@@ -1,5 +1,5 @@
 /**
- * Тесты Value Object Money.
+ * Tests for the Money Value Object.
  */
 
 import { describe, it, expect } from 'vitest'

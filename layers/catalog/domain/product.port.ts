@@ -1,7 +1,7 @@
 /**
- * Порт домена Catalog — контракт репозитория.
- * Определяет ЧТО нужно, но не КАК это получить.
- * Реализации (adapter, fake) лежат в infrastructure/.
+ * Catalog domain port — repository contract.
+ * Defines WHAT is needed, but not HOW to get it.
+ * Implementations (adapter, fake) are in infrastructure/.
  */
 
 import type { Product } from './product.model'

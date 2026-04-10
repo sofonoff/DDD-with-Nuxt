@@ -1,6 +1,6 @@
 <!--
-  UI / Modal — модальное окно.
-  Часть shared layer, доступна во всех доменах как <UiModal>.
+  UI / Modal — modal window.
+  Part of the shared layer, available in all domains as <UiModal>.
 -->
 
 <template>

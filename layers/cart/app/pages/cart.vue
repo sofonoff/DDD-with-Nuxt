@@ -1,17 +1,17 @@
 <!--
-  Страница / /cart — корзина.
-  Часть контекста Cart.
-  Межконтекстное взаимодействие: вызывает usePlaceOrder() из контекста Orders.
-  Демонстрирует Command (CQRS) + Saga (автоочистка корзины после OrderPlaced).
+  Page / /cart — shopping cart.
+  Part of the Cart context.
+  Cross-context interaction: calls usePlaceOrder() from the Orders context.
+  Demonstrates Command (CQRS) + Saga (auto-clear cart after OrderPlaced).
 -->
 
 <template>
   <div>
-    <h1>Корзина</h1>
+    <h1>Cart</h1>
 
     <div v-if="items.length === 0" class="cart-empty">
-      <p>Корзина пуста</p>
-      <NuxtLink to="/catalog">Перейти в каталог</NuxtLink>
+      <p>Your cart is empty</p>
+      <NuxtLink to="/catalog">Browse Catalog</NuxtLink>
     </div>
 
     <div v-else>
@@ -26,17 +26,17 @@
           <span>{{ item.quantity }}</span>
           <button @click="updateQuantity(item.product.id, item.quantity + 1)">+</button>
         </div>
-        <UiButton variant="danger" @click="removeItem(item.product.id)">Удалить</UiButton>
+        <UiButton variant="danger" @click="removeItem(item.product.id)">Remove</UiButton>
       </div>
 
       <div class="cart-footer">
         <div class="cart-total">
-          Итого: <strong><UiPriceTag :amount="totalPrice" large /></strong>
+          Total: <strong><UiPriceTag :amount="totalPrice" large /></strong>
         </div>
         <div class="cart-footer__actions">
-          <UiButton variant="secondary" @click="clear">Очистить</UiButton>
+          <UiButton variant="secondary" @click="clear">Clear</UiButton>
           <UiButton :disabled="orderLoading" @click="handlePlaceOrder">
-            {{ orderLoading ? 'Оформляем...' : 'Оформить заказ' }}
+            {{ orderLoading ? 'Placing...' : 'Place Order' }}
           </UiButton>
         </div>
       </div>

@@ -1,15 +1,15 @@
 <!--
-  Страница / /orders/:id — детальная страница заказа.
-  Часть контекста Orders. Использует бизнес-правило canCancel из модели.
+  Page / /orders/:id — order detail page.
+  Part of the Orders context. Uses the canCancel business rule from the model.
 -->
 
 <template>
   <div>
-    <div v-if="loading" class="order-detail__status">Загрузка...</div>
+    <div v-if="loading" class="order-detail__status">Loading...</div>
     <div v-else-if="error" class="order-detail__status">{{ error }}</div>
     <div v-else-if="current" class="order-detail">
       <div class="order-detail__header">
-        <h1>Заказ #{{ current.id }}</h1>
+        <h1>Order #{{ current.id }}</h1>
         <span class="order-detail__status-badge">{{ current.status }}</span>
       </div>
 
@@ -21,11 +21,11 @@
       </div>
 
       <div class="order-detail__total">
-        Итого: <strong><UiPriceTag :amount="current.total" large /></strong>
+        Total: <strong><UiPriceTag :amount="current.total" large /></strong>
       </div>
 
       <div class="order-detail__actions">
-        <NuxtLink to="/orders">Все заказы</NuxtLink>
+        <NuxtLink to="/orders">All Orders</NuxtLink>
       </div>
     </div>
   </div>

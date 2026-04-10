@@ -1,11 +1,11 @@
 <!--
-  Компонент / CartButton — кнопка корзины в навбаре с бейджем.
-  Часть контекста Cart. Используется в корневом app.vue.
+  Component / CartButton — cart button in navbar with badge.
+  Part of the Cart context. Used in root app.vue.
 -->
 
 <template>
   <NuxtLink to="/cart" class="cart-button">
-    Корзина<span v-if="totalItems > 0" class="cart-button__badge">{{ totalItems }}</span>
+    Cart<span v-if="totalItems > 0" class="cart-button__badge">{{ totalItems }}</span>
   </NuxtLink>
 </template>
 

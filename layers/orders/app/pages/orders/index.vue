@@ -1,11 +1,11 @@
 <!--
-  Страница / /orders — список заказов.
-  Тонкая обёртка — делегирует рендеринг компоненту OrderList.
+  Page / /orders — order list.
+  Thin wrapper — delegates rendering to the OrderList component.
 -->
 
 <template>
   <div>
-    <h1>Мои заказы</h1>
+    <h1>My Orders</h1>
     <OrderList />
   </div>
 </template>

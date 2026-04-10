@@ -1,7 +1,7 @@
 /**
- * Фейк — реализация ProductRepository с захардкоженными данными.
- * Для разработки без бэкенда и для тестов.
- * Подменяется в providers.ts вместо реального адаптера.
+ * Fake — ProductRepository implementation with hardcoded data.
+ * For development without a backend and for tests.
+ * Substituted in providers.ts instead of the real adapter.
  */
 
 import type { Product } from '../domain/product.model'

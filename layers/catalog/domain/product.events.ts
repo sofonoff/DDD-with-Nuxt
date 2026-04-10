@@ -1,10 +1,10 @@
 /**
- * Domain Events домена Catalog.
- * Имена событий, которые этот контекст может эмитить.
- * Другие контексты подписываются на них через useEvents().
+ * Catalog domain events.
+ * Event names that this context can emit.
+ * Other contexts subscribe to them via useEvents().
  */
 
 export const ProductEvents = {
-  /** Пользователь просмотрел карточку товара */
+  /** User viewed a product card */
   ProductViewed: 'catalog:ProductViewed',
 } as const

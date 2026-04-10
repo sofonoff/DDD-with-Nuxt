@@ -1,5 +1,5 @@
 /**
- * Тесты доменной модели Order.
+ * Tests for the Order domain model.
  */
 
 import { describe, it, expect } from 'vitest'

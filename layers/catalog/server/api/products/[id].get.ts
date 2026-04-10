@@ -1,6 +1,6 @@
 /**
- * Server API / GET /api/products/:id — возвращает товар по ID.
- * Мок-данные. В продакшене — запрос к БД.
+ * Server API / GET /api/products/:id — returns a product by ID.
+ * Mock data. In production — database query.
  */
 
 const products = [

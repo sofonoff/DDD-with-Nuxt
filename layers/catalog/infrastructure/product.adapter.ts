@@ -1,7 +1,7 @@
 /**
- * Адаптер — реализация ProductRepository через HTTP ($fetch).
- * Вызывает реальные серверные эндпоинты.
- * Подключается в app/plugins/providers.ts.
+ * Adapter — ProductRepository implementation via HTTP ($fetch).
+ * Calls real server endpoints.
+ * Connected in app/plugins/providers.ts.
  */
 
 import type { Product } from '../domain/product.model'

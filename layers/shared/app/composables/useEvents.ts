@@ -1,7 +1,7 @@
 /**
- * Шина событий — связь между bounded contexts.
- * Домены общаются через события, а не напрямую.
- * Пример: orders эмитит 'OrderPlaced', cart слушает и очищает корзину.
+ * Event bus — communication between bounded contexts.
+ * Domains communicate through events, not directly.
+ * Example: orders emits 'OrderPlaced', cart listens and clears the cart.
  */
 
 type EventHandler<T = unknown> = (payload: T) => void
@@ -15,7 +15,7 @@ export function useEvents() {
     }
     handlers.get(event)!.add(handler as EventHandler)
 
-    // Возвращаем функцию отписки
+    // Return the unsubscribe function
     return () => {
       handlers.get(event)?.delete(handler as EventHandler)
     }

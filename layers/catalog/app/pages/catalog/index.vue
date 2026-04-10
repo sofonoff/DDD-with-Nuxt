@@ -1,11 +1,11 @@
 <!--
-  Страница / /catalog — каталог товаров.
-  Тонкая обёртка — делегирует рендеринг компоненту ProductList.
+  Page / /catalog — product catalog.
+  Thin wrapper — delegates rendering to the ProductList component.
 -->
 
 <template>
   <div>
-    <h1>Каталог</h1>
+    <h1>Catalog</h1>
     <ProductList />
   </div>
 </template>

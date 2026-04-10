@@ -1,6 +1,6 @@
 /**
- * Корневой конфиг Nuxt 4.
- * Подключает модули. Layers из папки layers/ регистрируются автоматически.
+ * Root Nuxt 4 config.
+ * Connects modules. Layers from the layers/ directory are registered automatically.
  */
 
 export default defineNuxtConfig({
@@ -8,7 +8,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      /** Переключение адаптеров: 'real' (по умолчанию) или 'fake' */
+      /** Adapter switching: 'real' (default) or 'fake' */
       adapterMode: 'real',
     },
   },

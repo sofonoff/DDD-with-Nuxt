@@ -1,6 +1,6 @@
 /**
- * Конфиг shared layer.
- * Регистрирует папку app/components/ui как источник компонентов с префиксом Ui.
+ * Shared layer config.
+ * Registers the app/components/ui directory as a component source with the Ui prefix.
  */
 
 export default defineNuxtConfig({

@@ -380,54 +380,54 @@ const { fetchAll } = useOrders()                  // auto-imported composable
 
 ---
 
-## Pros
+## What you get
 
-**Team scalability.** Two frontend devs can work on `catalog/` and `orders/` in parallel — they physically can't break each other's code if they respect boundaries.
+**Parallel team work.** Two frontend devs work on `catalog/` and `orders/` simultaneously. ESLint enforces boundaries — they physically can't break each other's code. No merge conflicts on shared files.
 
-**Testability.** Domain is pure functions without frameworks. Tested with simple `assert`:
+**Instant domain testing.** Business logic is pure functions — 25 tests run in 200ms. No browser, no DOM, no framework bootstrap. Test cart logic without mounting a single component:
 
 ```ts
-import { addToCart, emptyCart, cartTotal } from './cart.model'
-
-const cart = addToCart(emptyCart(), product)
-assert(cartTotal(cart) === 299.99)
+const cart = addToCart(emptyCart(), headphones)
+expect(cartTotal(cart)).toBeCloseTo(299.99)
 ```
 
-No `mount()`, `wrapper.find()`, `mockNuxtApp()`.
+**Swap anything without fear.** REST → GraphQL? Change one adapter file. Redesign the UI? Domain stays untouched. Switch from localStorage to IndexedDB? One file. The onion layers protect each other.
 
-**Replaceability.** Today data comes from REST API, tomorrow from GraphQL, day after from gRPC — only the adapter changes. Domain and UI stay untouched.
+**Onboarding in minutes.** New developer opens `layers/` — sees business domains, not technical folders. Opens `domain/cart.model.ts` — reads the business rules in pure TypeScript. No framework knowledge needed to understand the logic.
 
-**Clarity.** A new developer opens `layers/` — sees business domains. Opens `domain/` — sees the model. No need to search for "where's the cart logic" among 200 files in `composables/`.
+**Full-stack layers.** Each context can have its own `server/api/` — BFF lives next to the frontend. Mock API in development, real API in production. Deploys as a single Nuxt app to Vercel/Netlify.
 
-**SSR / Vercel.** Each layer can have its own `server/api/` — BFF right next to the frontend. Deployed as a single Nuxt application.
+**Production-ready DI.** One env variable switches all adapters to fakes — offline development, demos, E2E tests without a backend. `NUXT_PUBLIC_ADAPTER_MODE=fake npm run dev` and you're done.
+
+**Future-proof.** If you outgrow a monolith — each layer already has clean boundaries. Extract to a separate repo or micro-frontend with minimal refactoring.
 
 ---
 
-## Cons
+## Trade-offs
 
-**Boilerplate.** For a simple CRUD with two pages — this is overengineering. If you have a landing page + contact form, you don't need DDD.
+> These are conscious trade-offs, not problems. Every architecture decision has a cost.
 
-**Learning curve.** The team must understand why port is separated from adapter, why event bus instead of a direct call. Without team buy-in — it turns into cargo cult.
+**Needs scale to justify.** For a landing page or a simple CRUD — use standard Nuxt structure. This template pays off when you have 3+ bounded contexts and 3+ developers. Below that threshold, the structure adds overhead without enough benefit.
 
-**Re-exports.** `Product` is defined in `model.ts`, re-exported in `index.ts`, referenced in `port.ts`. This is not true duplication (single source of truth), but it can feel verbose. The trade-off is explicit public API boundaries.
+**Team alignment required.** The team must understand why port is separated from adapter, why events instead of direct calls in some cases. Document conventions in your project's CLAUDE.md or ADR. Without shared understanding, any architecture degrades.
 
-**Event bus is a weak spot.** In production, `useEvents()` is a simple in-memory pub/sub. No delivery guarantee, no replay, no ordering. For complex scenarios you need something more robust.
+**More files per feature.** A new entity means `model.ts` + `port.ts` + `events.ts` + `adapter.ts` + `fake.ts` + `index.ts` + composable + tests. This is deliberate: each file has one responsibility. The trade-off is navigability vs explicitness.
 
-**Not everything maps to the frontend.** Aggregate root in DDD is about consistency under concurrent writes. On the frontend there's one user, one thread. The pattern is useful for encapsulation, but "aggregate boundary" here is more organizational than technical.
+**Event bus is intentionally simple.** `useEvents()` is an in-memory pub/sub — no delivery guarantees, no replay. This is fine for UI side-effects (clear cart after order). For complex event sourcing — replace with a robust solution, the interface stays the same.
 
 ---
 
 ## When to use
 
-| Situation | Approach |
+| Project scale | Recommended approach |
 |---|---|
-| Landing page, blog, simple site | Standard Nuxt structure |
-| 3-5 pages, one developer | Standard Nuxt structure |
-| 10+ pages, 2-3 developers | Nuxt Layers without DDD (just split by features) |
-| Many domains, 5+ developers, complex business logic | **DDD + Layers** |
-| Micro-frontend / multiple teams | DDD + Layers + possibly separate repositories |
+| Landing page, blog, marketing site | Standard Nuxt structure |
+| 3-5 pages, solo developer | Standard Nuxt structure |
+| 10+ pages, 2-3 developers | Nuxt Layers without DDD (split by features) |
+| Complex business logic, 3+ developers | **DDD + Layers (this template)** |
+| Multiple teams, independent deploy cycles | DDD + Layers → extract to micro-frontends later |
 
-Rule of thumb: **if you can't name at least 3 bounded contexts in your project — you don't need DDD.**
+**Start simple, evolve when needed.** You can adopt this incrementally: begin with Nuxt Layers for code organization, add `domain/` when business logic appears, add `infrastructure/` when you need adapter swapping.
 
 ---
 

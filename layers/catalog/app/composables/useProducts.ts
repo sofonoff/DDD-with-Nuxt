@@ -1,7 +1,7 @@
 /**
  * Composable / useProducts — Query (CQRS).
- * Читает данные каталога через инжектированный репозиторий.
- * Автоимпортируется Nuxt, доступен глобально.
+ * Reads catalog data through the injected repository.
+ * Auto-imported by Nuxt, available globally.
  */
 
 import type { Product } from '../../domain/product.model'
@@ -19,7 +19,7 @@ export function useProducts() {
     try {
       products.value = await $productRepo.getAll()
     } catch {
-      error.value = 'Не удалось загрузить товары'
+      error.value = 'Failed to load products'
     } finally {
       loading.value = false
     }
@@ -31,7 +31,7 @@ export function useProducts() {
     try {
       current.value = await $productRepo.getById(id)
     } catch {
-      error.value = 'Товар не найден'
+      error.value = 'Product not found'
     } finally {
       loading.value = false
     }

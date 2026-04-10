@@ -1,7 +1,7 @@
 /**
- * Публичное API контекста Catalog.
- * Другие контексты импортируют типы и события ТОЛЬКО отсюда.
- * Для логики — используй composable useProducts() (авто-импорт Nuxt).
+ * Public API of the Catalog context.
+ * Other contexts import types and events ONLY from here.
+ * For logic — use the useProducts() composable (Nuxt auto-import).
  */
 
 export type { Product } from './domain/product.model'

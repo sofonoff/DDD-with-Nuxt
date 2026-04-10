@@ -1,7 +1,7 @@
 /**
- * Модель домена Catalog — Entity Product.
- * Описывает что такое товар и бизнес-правила, связанные с ним.
- * Не знает ни про Vue, ни про API — чистый TypeScript.
+ * Catalog domain model — Entity Product.
+ * Describes what a product is and its associated business rules.
+ * Knows nothing about Vue or API — pure TypeScript.
  */
 
 export interface Product {
@@ -14,7 +14,7 @@ export interface Product {
   category: string
 }
 
-/** Проверяет, доступен ли товар для покупки */
+/** Checks whether the product is available for purchase */
 export function isAvailable(product: Product): boolean {
   return product.price > 0
 }
