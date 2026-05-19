@@ -4,7 +4,7 @@
  * that called useCart() — clear() fired N times per order.
  */
 
-import { emptyCart } from '../domain/cart.model'
+import { emptyCart } from '../../domain/cart.model'
 import { OrderEvents } from '#layers/orders'
 import { CartEvents } from '#layers/cart'
 
