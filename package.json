@@ -13,7 +13,8 @@
   "dependencies": {
     "@pinia/nuxt": "^0.11.3",
     "nuxt": "^4.0.0",
-    "pinia": "^3.0.4"
+    "pinia": "^3.0.4",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@nuxt/eslint": "^1.15.2",

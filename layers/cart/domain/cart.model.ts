@@ -4,10 +4,16 @@
  * Pure functions — all logic is tested without Vue or API.
  */
 
-import type { Product } from '../../catalog/domain/product.model'
+/** Projection of catalog Product into the Cart bounded context. */
+export interface CartProduct {
+  id: string
+  name: string
+  price: number
+  image: string
+}
 
 export interface CartItem {
-  product: Product
+  product: CartProduct
   quantity: number
 }
 
@@ -19,7 +25,7 @@ export function emptyCart(): Cart {
   return { items: [] }
 }
 
-export function addToCart(cart: Cart, product: Product): Cart {
+export function addToCart(cart: Cart, product: CartProduct): Cart {
   const existing = cart.items.find((item) => item.product.id === product.id)
   if (existing) {
     return {

@@ -116,8 +116,8 @@ addItem(product)                    // direct, synchronous call
 // usePlaceOrder.ts — order placed, what happens next is not its concern
 events.emit(OrderEvents.OrderPlaced, order)
 
-// useCart.ts — decides to react on its own
-events.on(OrderEvents.OrderPlaced, () => clear())
+// cart-saga.ts plugin — reacts once per app instance
+events.on(OrderEvents.OrderPlaced, () => { cart.value = emptyCart(); $cartRepo.save(emptyCart()) })
 ```
 
 | Situation | Approach | Example |
@@ -153,7 +153,7 @@ const { fetchAll } = useOrders()                  // auto-imported composable
 | **Domain Event** | Message broker | `useEvents()` — simple event bus |
 | **Use Case / Command** | Application Service | Composable (`usePlaceOrder`) |
 | **Query** | Read model | Composable (`useOrders`) |
-| **Saga** | Orchestrator | Event listener in composable |
+| **Saga** | Orchestrator | Event listener in plugin (`cart-saga.ts`) |
 | **DI (Dependency Injection)** | Spring / DI framework | Nuxt plugin (`providers.ts`) |
 
 ### Ports & Adapters
@@ -210,7 +210,7 @@ Why separate? Queries can be cached, deduplicated, SSR'd. Commands can't.
   <img src="docs/saga-flow.svg" alt="Saga Flow" width="780" />
 </p>
 
-Domains don't know about each other — `usePlaceOrder` emits an event, `useCart` independently decides to react.
+Domains don't know about each other — `usePlaceOrder` emits an event, the `cart-saga.ts` plugin independently reacts. The saga lives in a plugin (not a composable) so the subscription is registered exactly once per app instance, regardless of how many components call `useCart()`.
 
 ### Dependency Injection (DI)
 
@@ -235,7 +235,7 @@ Composables get dependencies via `useNuxtApp().$productRepo` — they don't impo
 
 **Parallel team work.** Two frontend devs work on `catalog/` and `orders/` simultaneously. ESLint enforces boundaries — they physically can't break each other's code.
 
-**Instant domain testing.** Business logic is pure functions — 25 tests run in 200ms. No browser, no DOM, no framework bootstrap:
+**Instant domain testing.** Business logic is pure functions — 36 tests run in 200ms. No browser, no DOM, no framework bootstrap:
 
 ```ts
 const cart = addToCart(emptyCart(), headphones)
@@ -264,7 +264,7 @@ expect(cartTotal(cart)).toBeCloseTo(299.99)
 
 **More files per feature.** A new entity means `model.ts` + `port.ts` + `events.ts` + `adapter.ts` + `fake.ts` + `index.ts` + composable + tests. This is deliberate — each file has one responsibility.
 
-**Event bus is intentionally simple.** `useEvents()` is an in-memory pub/sub — no delivery guarantees. Fine for UI side-effects. For complex event sourcing — replace with a robust solution, the interface stays the same.
+**Event bus is intentionally simple.** `useEvents()` is an in-memory pub/sub — no delivery guarantees. Fine for UI side-effects. The bus is created once per app instance via a Nuxt plugin (`$eventBus`), so it is SSR-safe and does not leak state between requests. For complex event sourcing — replace with a robust solution, the interface stays the same.
 
 ---
 
@@ -293,7 +293,7 @@ npm run test        # watch mode
 npm run test:run    # single run
 ```
 
-25 tests across all domains — run in ~200ms. Test files live next to the code: `domain/__tests__/cart.model.test.ts`.
+36 tests across all domains — run in ~200ms. Test files live next to the code: `domain/__tests__/cart.model.test.ts`, `app/__tests__/useEvents.test.ts`.
 
 This architecture is ideal for **TDD (Test-Driven Development)** — the Red → Green → Refactor cycle takes seconds. Domain has zero dependencies, so no database, HTTP mocks, or DI setup needed. Write the test first, implement the rule, move on.
 
@@ -321,7 +321,7 @@ import { createOrder } from '../orders/domain/order.model'
 import type { Order } from '../orders'
 ```
 
-Within your own context — imports are unrestricted.
+Within your own context — importing from your own `domain/` and `infrastructure/` is allowed. Cross-context imports from another context's internals are flagged, even from within your own files.
 
 ### ACL (Anti-Corruption Layer)
 

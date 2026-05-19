@@ -47,7 +47,7 @@
 
 <script setup lang="ts">
 const { items, totalPrice, removeItem, updateQuantity, clear } = useCart()
-const { execute: placeOrder, loading: orderLoading, error: orderError } = usePlaceOrder()
+const { execute: placeOrder, loading: orderLoading, errorMessage: orderError } = usePlaceOrder()
 
 async function handlePlaceOrder() {
   const order = await placeOrder(items.value)

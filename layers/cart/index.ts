@@ -4,7 +4,7 @@
  * For logic — use the useCart() composable (Nuxt auto-import).
  */
 
-export type { Cart, CartItem } from './domain/cart.model'
+export type { Cart, CartItem, CartProduct } from './domain/cart.model'
 export { cartTotal, cartItemCount } from './domain/cart.model'
 export type { CartRepository } from './domain/cart.port'
 export { CartEvents } from './domain/cart.events'

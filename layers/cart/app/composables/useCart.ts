@@ -1,12 +1,11 @@
 /**
  * Composable / useCart — Aggregate.
  * Manages cart state, delegates logic to domain/cart.model.ts.
- * Listens to the OrderPlaced event (Saga) — automatically clears the cart after an order is placed.
+ * The OrderPlaced → clear saga is handled in cart-saga.ts plugin (once per app instance).
  */
 
-import type { Product } from '~~/layers/catalog/domain/product.model'
-import { OrderEvents } from '~~/layers/orders/domain/order.events'
-import type { Cart } from '#layers/cart'
+import type { Product } from '#layers/catalog'
+import type { Cart, CartProduct } from '#layers/cart'
 import {
   emptyCart,
   addToCart,
@@ -16,7 +15,7 @@ import {
   cartItemCount,
 } from '../../domain/cart.model'
 import { CartEvents } from '#layers/cart'
-import {useEvents} from "#layers/shared/app/composables/useEvents";
+import { useEvents } from '#layers/shared/app/composables/useEvents'
 
 export function useCart() {
   const { $cartRepo } = useNuxtApp()
@@ -38,8 +37,9 @@ export function useCart() {
   }
 
   function addItem(product: Product) {
-    cart.value = addToCart(cart.value, product)
-    events.emit(CartEvents.ItemAdded, product)
+    const cartProduct: CartProduct = { id: product.id, name: product.name, price: product.price, image: product.image }
+    cart.value = addToCart(cart.value, cartProduct)
+    events.emit(CartEvents.ItemAdded, cartProduct)
     persist()
   }
 
@@ -59,9 +59,6 @@ export function useCart() {
     events.emit(CartEvents.CartCleared)
     persist()
   }
-
-  // Saga: clear the cart when an order is placed
-  events.on(OrderEvents.OrderPlaced, () => clear())
 
   return { items, totalItems, totalPrice, addItem, removeItem, updateQuantity, clear, load }
 }

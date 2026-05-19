@@ -13,26 +13,20 @@ import {
   cartTotal,
   cartItemCount,
 } from '../cart.model'
-import type { Product } from '../../../catalog/domain/product.model'
+import type { CartProduct } from '../cart.model'
 
-const headphones: Product = {
+const headphones: CartProduct = {
   id: '1',
   name: 'Headphones',
-  slug: 'headphones',
-  description: 'Wireless headphones',
   price: 299.99,
   image: '/img.jpg',
-  category: 'electronics',
 }
 
-const keyboard: Product = {
+const keyboard: CartProduct = {
   id: '2',
   name: 'Keyboard',
-  slug: 'keyboard',
-  description: 'Mechanical keyboard',
   price: 149.99,
   image: '/img.jpg',
-  category: 'electronics',
 }
 
 describe('cart.model', () => {

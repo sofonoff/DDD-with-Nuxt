@@ -116,8 +116,8 @@ addItem(product)                    // прямой, синхронный выз
 // usePlaceOrder.ts — заказ оформлен, что дальше — не его дело
 events.emit(OrderEvents.OrderPlaced, order)
 
-// useCart.ts — сам решает реагировать
-events.on(OrderEvents.OrderPlaced, () => clear())
+// плагин cart-saga.ts — реагирует ровно один раз на весь app
+events.on(OrderEvents.OrderPlaced, () => { cart.value = emptyCart(); $cartRepo.save(emptyCart()) })
 ```
 
 | Ситуация | Подход | Пример |
@@ -153,7 +153,7 @@ const { fetchAll } = useOrders()                  // авто-импорт compo
 | **Domain Event** | Message broker | `useEvents()` — простая шина событий |
 | **Use Case / Command** | Application Service | Composable (`usePlaceOrder`) |
 | **Query** | Read model | Composable (`useOrders`) |
-| **Saga** | Orchestrator | Event listener в composable |
+| **Saga** | Orchestrator | Event listener в плагине (`cart-saga.ts`) |
 | **DI (Dependency Injection)** | Spring / DI framework | Nuxt plugin (`providers.ts`) |
 
 ### Ports & Adapters
@@ -210,7 +210,7 @@ export function usePlaceOrder() {
   <img src="docs/saga-flow.svg" alt="Saga Flow" width="780" />
 </p>
 
-Домены не знают друг о друге — `usePlaceOrder` эмитит событие, `useCart` независимо решает реагировать.
+Домены не знают друг о друге — `usePlaceOrder` эмитит событие, плагин `cart-saga.ts` независимо реагирует. Сага живёт в плагине, а не в composable — подписка регистрируется ровно один раз на весь app, сколько бы компонентов ни вызвали `useCart()`.
 
 ### Dependency Injection (DI)
 
@@ -235,7 +235,7 @@ Composables получают зависимости через `useNuxtApp().$pr
 
 **Параллельная работа команды.** Два фронтендера работают над `catalog/` и `orders/` одновременно. ESLint контролирует границы — они физически не могут сломать код друг друга.
 
-**Мгновенные тесты домена.** Бизнес-логика — чистые функции, 25 тестов за 200мс. Без браузера, DOM и фреймворка:
+**Мгновенные тесты домена.** Бизнес-логика — чистые функции, 36 тестов за 200мс. Без браузера, DOM и фреймворка:
 
 ```ts
 const cart = addToCart(emptyCart(), headphones)
@@ -264,7 +264,7 @@ expect(cartTotal(cart)).toBeCloseTo(299.99)
 
 **Больше файлов на фичу.** Новая entity — это `model.ts` + `port.ts` + `events.ts` + `adapter.ts` + `fake.ts` + `index.ts` + composable + тесты. Это намеренно — у каждого файла одна ответственность.
 
-**Event bus намеренно простой.** `useEvents()` — in-memory pub/sub, без гарантий доставки. Для UI-побочных эффектов этого достаточно. Для сложного event sourcing — замени на robust-решение, интерфейс останется тем же.
+**Event bus намеренно простой.** `useEvents()` — in-memory pub/sub, без гарантий доставки. Для UI-побочных эффектов этого достаточно. Шина создаётся один раз на инстанс приложения через Nuxt-плагин (`$eventBus`) — SSR-безопасна, не течёт между запросами. Для сложного event sourcing — замени на robust-решение, интерфейс останется тем же.
 
 ---
 
@@ -293,7 +293,7 @@ npm run test        # watch mode
 npm run test:run    # один прогон
 ```
 
-25 тестов по всем доменам — за ~200мс. Тест-файлы рядом с кодом: `domain/__tests__/cart.model.test.ts`.
+36 тестов по всем доменам — за ~200мс. Тест-файлы рядом с кодом: `domain/__tests__/cart.model.test.ts`, `app/__tests__/useEvents.test.ts`.
 
 Эта архитектура идеальна для **TDD (Test-Driven Development)** — цикл Red → Green → Refactor занимает секунды. У domain нет зависимостей — не нужна БД, HTTP-моки, конфигурация DI. Пишешь тест, реализуешь правило, идёшь дальше.
 
@@ -321,7 +321,7 @@ import { createOrder } from '../orders/domain/order.model'
 import type { Order } from '../orders'
 ```
 
-Внутри своего контекста — импорты не ограничены.
+Внутри своего контекста — импорты из собственных `domain/` и `infrastructure/` разрешены. Импорты из чужих внутренностей запрещены, даже из файлов своего контекста.
 
 ### ACL (Anti-Corruption Layer)
 
